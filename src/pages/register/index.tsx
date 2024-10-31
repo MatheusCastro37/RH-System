@@ -66,7 +66,9 @@ export default function Register(){
             setErrorPasswordConfirm("");
         }
 
-        registerUser(inputName.value, inputEmail.value, inputPassword.value);
+        if(isNameValid && isEmailValid && isPasswordValid && isSamePassword) {
+            registerUser(inputName.value, inputEmail.value, inputPassword.value);
+        }
     }
 
     async function registerUser(name: string, email: string, password: string) {
