@@ -6,9 +6,10 @@ export const InputContainer = styled.div<{ $error?: string; $disable: boolean; $
     width: fit-content;
     
     >div{
+        background-color: #FFFFFF;
         display: flex;
         align-items: center;
-        width: max-content;
+        width: 100%;
         margin-top: 4px;
         border: ${props => props.$error ? "1px solid red" : "1px solid #E5E0EB"};
         border: ${props => props.$isActive ? "1px solid #9D3FE7" : null};

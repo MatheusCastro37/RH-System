@@ -3,7 +3,7 @@ import Button from "../../components/Button";
 import Input from "../../components/Input";
 import Typography from "../../components/Typography";
 import { Container, ContainerButton, WrapperForm } from "./style";
-import { supabase } from "../../supabase/supabase";
+import { supabase } from "../../components/supabase";
 
 function validateName(name: string) {
     return name.length > 2;

@@ -12,6 +12,7 @@ export const Container = styled.div`
     input{
         width: 90%;
         padding: 20px;
+        max-width: 375px;
         
         >div{
             width: 100%;
