@@ -36,7 +36,8 @@ export default function Register(){
         const inputEmail = document.querySelector("#input-email") as HTMLInputElement;
         const inputPassword = document.querySelector("#input-password") as HTMLInputElement;
         const inputPasswordConfirm = document.querySelector("#input-password-confirm") as HTMLInputElement;
-    
+        const btnRegister = document.querySelector("#btn-register")!;
+
         const isNameValid = validateName(inputName.value);
         const isEmailValid = validateEmail(inputEmail.value);
         const isPasswordValid = validatePassword(inputPassword.value);
@@ -67,7 +68,11 @@ export default function Register(){
         }
 
         if(isNameValid && isEmailValid && isPasswordValid && isSamePassword) {
-            registerUser(inputName.value, inputEmail.value, inputPassword.value);
+            btnRegister.setAttribute("disabled", "true");
+            setTimeout(async () => {
+                await registerUser(inputName.value, inputEmail.value, inputPassword.value);
+                btnRegister.removeAttribute("disabled")
+            }, 1500)
         }
     }
 
@@ -118,7 +123,7 @@ export default function Register(){
                     placeholder="Ex: 123456"
                 />
                 <ContainerButton>
-                    <Button variant="main" size="medium" onClick={verify}>
+                    <Button id="btn-register" variant="main" size="medium" onClick={verify}>
                         Cadastrar
                     </Button>
                 </ContainerButton>
