@@ -23,9 +23,10 @@ export default function Notification({
   btn1Text,
   btn2Action,
   btn2Text,
+  ...props
 }:Types. NotificationProps) {
   return (
-    <Styles.NotificationBox $model={model}>
+    <Styles.NotificationBox $model={model} {...props}>
       <Styles.NotificicationSide $model={model} $type={type}></Styles.NotificicationSide>
       <Styles.NotificactionContent $type={type} $model={model}>
         {type == "inform" && model != "bunner" ? (
