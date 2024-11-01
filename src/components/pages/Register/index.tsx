@@ -134,7 +134,7 @@ export default function Register(){
         <Container>
             <Notification id="notification" className="alert close" header={headerError} describe={describeError} model="informer" type={typeNotification}/>
             <WrapperForm className="form">
-                <Typography variant="H3">Cadastre-se</Typography>
+                <Typography variant="H2">Cadastre-se</Typography>
                 <Input
                     id="input-name"
                     height="default"

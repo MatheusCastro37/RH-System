@@ -40,7 +40,7 @@ export const WrapperForm = styled.div`
     background-color: ${theme.grayscale.bgLightGrey};
     border-radius: 20px;
 
-    h3{
+    h2{
         text-align: center;
     }
 `;
