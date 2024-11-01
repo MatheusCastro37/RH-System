@@ -94,6 +94,10 @@ function paragraphColor(
     return colorMap[type];
   }
 
+  if(model == 'bunner' && type == "error") {
+    return theme.grayscale.white;
+  } 
+
   return colors[model];
 }
 
