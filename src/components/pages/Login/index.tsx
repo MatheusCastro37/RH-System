@@ -1,5 +1,3 @@
-import styled from "styled-components";
-import { theme } from "../../colors/colorts";
 import Typography from "../../Typography";
 import Input from "../../Input";
 import Button from "../../Button";
@@ -7,51 +5,8 @@ import { useState } from "react";
 import { supabase } from "../../supabase";
 import Notification from "../../notfication";
 import { NotificationType } from "../../notfication/types";
+import * as Styles from './styles'
 
-const Container = styled.div`
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const LoginBox = styled.div`
-  box-sizing: border-box;
-  width: 450px;
-  background-color: ${theme.grayscale.bgLightGrey};
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  padding: 25px 50px;
-  gap: 25px;
-`;
-
-const InputBox = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-
-  div {
-    width: 100%;
-  }
-
-  input {
-    width: 750%;
-  }
-`;
-
-const NotificationControlDiv = styled.div<{ isVisible: boolean }>`
-position: absolute;
-left: 50%;
-top: ${(props) => (props.isVisible ? "15%" : "-100%")};
-transform: translate(-50%, -50%);
-transition: 1s ease-in-out;
-`;
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -120,19 +75,19 @@ export default function Login() {
 
   return (
     <>
-      <NotificationControlDiv isVisible={notificationIsVisible}>
+      <Styles.NotificationControlDiv isVisible={notificationIsVisible}>
         <Notification
           describe={notificationDescribe}
           header={notificationHeader}
           type={notificationType}
           model="informer"
         />
-      </NotificationControlDiv>
-      <Container>
-        <LoginBox>
+      </Styles.NotificationControlDiv>
+      <Styles.Container>
+        <Styles.LoginBox>
           <Typography variant="H2">Login</Typography>
 
-          <InputBox>
+          <Styles.InputBox>
             <Input
               value={email}
               height="small"
@@ -148,12 +103,12 @@ export default function Login() {
               textLabel={<Typography variant="body-M">Senha</Typography>}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </InputBox>
+          </Styles.InputBox>
           <Button size="large" variant="main" onClick={login}>
             <Typography variant="body-M-regular">Entrar</Typography>
           </Button>
-        </LoginBox>
-      </Container>
+        </Styles.LoginBox>
+      </Styles.Container>
     </>
   );
 }
