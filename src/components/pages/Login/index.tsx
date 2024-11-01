@@ -1,12 +1,12 @@
 import styled from "styled-components";
-import { theme } from "../colors/colorts";
-import Typography from "../Typography";
-import Input from "../Input";
-import Button from "../Button";
+import { theme } from "../../colors/colorts";
+import Typography from "../../Typography";
+import Input from "../../Input";
+import Button from "../../Button";
 import { useState } from "react";
-import { supabase } from "../supabase";
-import Modal from "../Modal";
-import ErrorImg from "../assets/line-error.svg";
+import { supabase } from "../../supabase";
+import Notification from "../../notfication";
+import { NotificationType } from "../../notfication/types";
 
 const Container = styled.div`
   width: 100vw;
@@ -45,15 +45,31 @@ const InputBox = styled.div`
   }
 `;
 
+const NotificationControlDiv = styled.div<{ isVisible: boolean }>`
+position: absolute;
+left: 50%;
+top: ${(props) => (props.isVisible ? "15%" : "-100%")};
+transform: translate(-50%, -50%);
+transition: 1s ease-in-out;
+`;
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+  const [notificationDescribe, setNotificationDescribe] = useState("");
+  const [notificationHeader, setNotificationHeader] = useState("");
+  const [notificationType, setNotificationType] =
+    useState<NotificationType>("inform");
+  const [notificationIsVisible, setNotificationIsVisible] = useState(false);
 
   async function login() {
     if (email == "" || password == "") {
-      console.log("Preencha todos os campos");
+      showNotification(
+        "Preencha todos os campos antes de prosseguir.",
+        "Erro ao realizar Autenticação",
+        "error",
+        3500
+      );
       return;
     }
 
@@ -64,43 +80,54 @@ export default function Login() {
       });
 
       if (error) {
-        setModalMessage(`Erro ao realizar autenticação: ${error.message}`);
-        openModal();
+        showNotification(
+          "Email ou senha inválidos",
+          "Erro ao realizar Autenticação",
+          "error",
+          3500
+        );
         return;
       }
 
       if (data) {
-        alert("Login realizado com sucesso");
+        showNotification(
+          "Redirecionando...",
+          "Autenticação realizada com sucesso",
+          "success",
+          2000
+        );
       }
     } catch (error) {
       console.error(error);
-      setModalMessage("Ocorreu um erro, tente novamente.");
-      openModal();
     }
   }
 
-  function openModal() {
-    setIsVisible(true);
-  }
 
-  function closeModal() {
-    setIsVisible(false);
+
+  function showNotification(
+    describe: string,
+    header: string,
+    type: NotificationType,
+    time: number = 3000
+  ) {
+    setNotificationType(type);
+    setNotificationHeader(header);
+    setNotificationDescribe(describe);
+
+    setNotificationIsVisible(true);
+    setTimeout(() => setNotificationIsVisible(false), time);
   }
 
   return (
     <>
-      <Modal
-        img={ErrorImg}
-        isVisible={isVisible}
-        action={
-          <Button size="large" variant="secondary" onClick={closeModal}>
-            <Typography variant="body-M-regular">Ok</Typography>
-          </Button>
-        }
-        onClose={closeModal}
-      >
-        <Typography variant="body-L">{modalMessage}</Typography>
-      </Modal>
+      <NotificationControlDiv isVisible={notificationIsVisible}>
+        <Notification
+          describe={notificationDescribe}
+          header={notificationHeader}
+          type={notificationType}
+          model="informer"
+        />
+      </NotificationControlDiv>
       <Container>
         <LoginBox>
           <Typography variant="H2">Login</Typography>
