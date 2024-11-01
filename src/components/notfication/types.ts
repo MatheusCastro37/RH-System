@@ -3,7 +3,7 @@ import React from "react";
 export type NotificationType = "error" | "warning" | "success" | "inform";
 export type ModelType = "toast" | "snackbar" | "informer" | "bunner";
 
-export interface NotificationProps extends  React.HTMLAttributes<HTMLDivElement>{
+export interface NotificationProps extends React.HTMLAttributes<HTMLDivElement> {
   header?: string;
   describe: string;
   type: NotificationType;
