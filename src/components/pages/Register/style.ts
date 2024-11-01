@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { theme } from "../../components/colors/colorts";
+import { theme } from "../../colors/colorts";
 
 export const Container = styled.div`
     width: 100vw;
@@ -8,7 +8,22 @@ export const Container = styled.div`
     align-items: center;
     justify-content: center;
 
-    >div,
+    .alert{
+        transition: bottom .5s;
+        position: absolute;
+        margin: 15px 0;
+    }
+
+    .alert.close{
+        bottom: 100%;
+        z-index: 5;
+    }
+
+    .alert.open{
+        bottom: 80%;
+    }
+
+    div.form,
     input{
         width: 90%;
         padding: 20px;
@@ -33,4 +48,12 @@ export const WrapperForm = styled.div`
 export const ContainerButton = styled.div`
     display: flex;
     justify-content: center;
+
+    button > div{
+        display: none;
+    }
+
+    button > div.show{
+        display: block;
+    }
 `;

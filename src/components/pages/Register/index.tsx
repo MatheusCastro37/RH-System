@@ -1,9 +1,13 @@
 import { useState } from "react";
-import Button from "../../components/Button";
-import Input from "../../components/Input";
-import Typography from "../../components/Typography";
+import Button from "../../Button";
+import Input from "../../Input";
+import Typography from "../../Typography";
 import { Container, ContainerButton, WrapperForm } from "./style";
-import { supabase } from "../../components/supabase";
+import spinner from "../../assets/spinner.svg";
+import { supabase } from "../../supabase";
+import Notification from "../../notfication";
+import { NotificationType } from "../../notfication/types";
+import { notification } from "./type";
 
 function validateName(name: string) {
     return name.length > 2;
@@ -25,18 +29,34 @@ function validateSamePassword(password: string, passwordConfirm: string) {
     return password === passwordConfirm;
 }
 
+function showLoading(btnElement: HTMLButtonElement, textLoading: string) {
+    btnElement.firstElementChild!.classList.add("show");
+
+    const currentText = btnElement.textContent;
+    btnElement.lastElementChild!.textContent = textLoading;
+
+    setTimeout(() => {
+        btnElement.lastElementChild!.textContent = currentText;
+        btnElement.firstElementChild!.classList.remove("show");
+    }, 1400)
+}
+
 export default function Register(){
     const [errorName, setErrorName] = useState("");
     const [errorEmail, setErrorEmail] = useState("");
     const [errorPassword, setErrorPassword] = useState("");
     const [errorPasswordConfirm, setErrorPasswordConfirm] = useState("");
 
+    const [typeNotification, setTypeNotification] = useState<NotificationType>("warning");
+    const [headerError, setHeaderError] = useState("");
+    const [describeError, setDescribeError] = useState("");
+
     function verify() {
         const inputName = document.querySelector("#input-name") as HTMLInputElement;
         const inputEmail = document.querySelector("#input-email") as HTMLInputElement;
         const inputPassword = document.querySelector("#input-password") as HTMLInputElement;
         const inputPasswordConfirm = document.querySelector("#input-password-confirm") as HTMLInputElement;
-        const btnRegister = document.querySelector("#btn-register")!;
+        const btnRegister = document.querySelector("#btn-register") as HTMLButtonElement;
 
         const isNameValid = validateName(inputName.value);
         const isEmailValid = validateEmail(inputEmail.value);
@@ -69,10 +89,31 @@ export default function Register(){
 
         if(isNameValid && isEmailValid && isPasswordValid && isSamePassword) {
             btnRegister.setAttribute("disabled", "true");
+            showLoading(btnRegister, "Cadastrando...");
             setTimeout(async () => {
                 await registerUser(inputName.value, inputEmail.value, inputPassword.value);
                 btnRegister.removeAttribute("disabled")
             }, 1500)
+        }
+    }
+
+    function showNotification(type: notification) {
+        const notification = document.querySelector("#notification") as Element;
+        notification.classList.remove("close");
+        notification.classList.add("open");
+
+        setTimeout(() => {
+            notification.classList.remove("open");
+            notification.classList.add("close");
+        }, 2000);
+
+        if(type === "error") {
+            setHeaderError("Aviso!");
+            setDescribeError("Usuario já cadastrado!")
+        } else {
+            setTypeNotification("success");
+            setHeaderError("Sucesso!");
+            setDescribeError("Usuario cadastrado!");
         }
     }
 
@@ -82,13 +123,17 @@ export default function Register(){
             password,
         })
 
-        console.log(data);
-        console.log(error);
+        if(error) {
+            showNotification("error");
+        } else {
+            showNotification("success");
+        }
     }
 
     return (
         <Container>
-            <WrapperForm>
+            <Notification id="notification" className="alert close" header={headerError} describe={describeError} model="informer" type={typeNotification}/>
+            <WrapperForm className="form">
                 <Typography variant="H3">Cadastre-se</Typography>
                 <Input
                     id="input-name"
@@ -123,8 +168,8 @@ export default function Register(){
                     placeholder="Ex: 123456"
                 />
                 <ContainerButton>
-                    <Button id="btn-register" variant="main" size="medium" onClick={verify}>
-                        Cadastrar
+                    <Button id="btn-register" variant="main" size="medium" onClick={verify} icon={spinner}>
+                        <p>Cadastrar</p>
                     </Button>
                 </ContainerButton>
             </WrapperForm>
