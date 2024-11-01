@@ -139,7 +139,7 @@ export default function Register(){
                     id="input-name"
                     height="default"
                     type="text"
-                    textLabel="Digite seu nome:"
+                    textLabel={<Typography variant="body-S">Digite seu nome:</Typography>}
                     textError={errorName}
                     placeholder="Ex: John Doe"
                 />
@@ -147,7 +147,7 @@ export default function Register(){
                     id="input-email"
                     height="default"
                     type="text"
-                    textLabel="Digite seu e-mail:"
+                    textLabel={<Typography variant="body-S">Digite seu e-mail:</Typography>}
                     textError={errorEmail}
                     placeholder="Ex: example@example.com"
                 />
@@ -155,7 +155,7 @@ export default function Register(){
                     id="input-password"
                     height="default"
                     type="password"
-                    textLabel="Digite sua senha:"
+                    textLabel={<Typography variant="body-S">Digite sua senha:</Typography>}
                     textError={errorPassword}
                     placeholder="Ex: 123456"
                 />
@@ -163,7 +163,7 @@ export default function Register(){
                     id="input-password-confirm"
                     height="default"
                     type="password"
-                    textLabel="Digite sua senha novamente:"
+                    textLabel={<Typography variant="body-S">Digite sua senha novamente:</Typography>}
                     textError={errorPasswordConfirm}
                     placeholder="Ex: 123456"
                 />
