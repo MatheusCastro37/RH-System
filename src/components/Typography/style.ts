@@ -12,6 +12,6 @@ export const styleMapping = {
         'body-M-regular': styled.p`font: 400 18px/132% ${font}`,
         'body-S': styled.p`font: 300 16px/148% ${font}`,
         'body-S-regular': styled.p`font: 400 16px/148% ${font}`,
-        'body-XS': styled.h1`font: 400 14px/140% ${font}`,
+        'body-XS': styled.p`font: 400 14px/140% ${font}`,
     }
 }
