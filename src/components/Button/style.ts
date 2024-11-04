@@ -170,6 +170,9 @@ export const StyledBtn = styled.button<{ $size: Types.typeSize, $variant: Types.
     background-color:  ${props => disabledColorMap[props.$variant]} ;
     }
     
+    &:focus{
+    outline: none;
+    }
     ${props => setHoverForChild(props.$variant, props.$disabled)}
 `
 
