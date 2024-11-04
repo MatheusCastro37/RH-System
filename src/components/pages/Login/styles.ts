@@ -38,10 +38,10 @@ export const InputBox = styled.div`
   }
 `;
 
-export const NotificationControlDiv = styled.div<{ isVisible: boolean }>`
+export const NotificationControlDiv = styled.div<{ $isVisible: boolean }>`
 position: absolute;
 left: 50%;
-top: ${(props) => (props.isVisible ? "15%" : "-100%")};
+top: ${(props) => (props.$isVisible ? "15%" : "-100%")};
 transform: translate(-50%, -50%);
 transition: 1s ease-in-out;
 `;
