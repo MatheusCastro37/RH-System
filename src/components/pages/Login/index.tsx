@@ -75,7 +75,7 @@ export default function Login() {
 
   return (
     <>
-      <Styles.NotificationControlDiv isVisible={notificationIsVisible}>
+      <Styles.NotificationControlDiv $isVisible={notificationIsVisible}>
         <Notification
           describe={notificationDescribe}
           header={notificationHeader}
