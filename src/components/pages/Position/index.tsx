@@ -3,6 +3,7 @@ import Button from "../../Button";
 import Typography from "../../Typography";
 import { BodyWrapper, ListingContainer } from "./styles";
 import { dataType } from "./types";
+import Modal from "../../Modal";
 
 function convertNumberToReal(value: number) {
     const valueFormatted = new Intl.NumberFormat('pt-BR', {
@@ -25,6 +26,7 @@ function showData(data: dataType[]) {
 
 export default function Position() {
     const [salaryList, setSalaryList] = useState([]);
+    const [isOpenModal, setIsOpenModal] = useState(false);
 
     useEffect(() => {
         async function getSalaryData() {
@@ -43,15 +45,18 @@ export default function Position() {
 
         getSalaryData();
 
-    }, [])
+    }, []);
 
     return(
         <>
             <BodyWrapper>
+                <Modal isVisible={isOpenModal} onClose={() => setIsOpenModal(false)}>
+                    <h1>Teste</h1>
+                </Modal>
                 <ListingContainer>
                     <div>
                         <Typography variant="H4">Cargos</Typography>
-                        <Button variant="main" size="medium">Adicionar</Button>
+                        <Button variant="main" size="medium" onClick={() => setIsOpenModal(true)}>Adicionar</Button>
                     </div>
                     <table>
                         <thead>
