@@ -14,15 +14,27 @@ function convertNumberToReal(value: number) {
     return valueFormatted;
 }
 
+function validateName(name: string) {
+    return name.length > 2;
+}
+
+function validateLevel(level: string) {
+    return level.length > 5;
+}
+
 export default function Carrer() {
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [typeModal, setTypeModal] = useState<typeModal>("create");
-    
+
     const [titleModal, setTitleModal] = useState("Adicionar");
     const [salaryList, setSalaryList] = useState([]);
     const [salaryInput, setSalaryInput] = useState("R$ 0,00");
     const [valueInputName, setValueInputName] = useState("");
     const [valueInputLevel, setvalueInputLevel] = useState("");
+
+    const [errorName, setErrorName] = useState("");
+    const [errorLevel, setErrorLevel] = useState("");
+    const [errorSalary, setErrorSalary] = useState("");
 
     const [editButton, setEditButton] = useState<Element>();
 
@@ -84,8 +96,8 @@ export default function Carrer() {
             <>
                 <Typography variant="H3">{titleModal}</Typography>
 
-                <Input value={valueInputName} height="default" textLabel={<Typography variant="body-S">Nome do cargo:</Typography>} placeholder="Ex: desenvolvedor Front-End" />
-                <Input value={valueInputLevel} height="default" textLabel={<Typography variant="body-S">Nivel:</Typography>} placeholder="Ex: Junior" />
+                <Input value={valueInputName} height="default" textLabel={<Typography variant="body-S">Nome do cargo:</Typography>} textError={errorName} placeholder="Ex: desenvolvedor Front-End" />
+                <Input value={valueInputLevel} height="default" textLabel={<Typography variant="body-S">Nivel:</Typography>} textError={errorLevel} placeholder="Ex: Junior" />
                 <Input
                 type="text"
                 height="default"
@@ -94,10 +106,29 @@ export default function Carrer() {
                 value={salaryInput}
                 onChange={formatSalary}/>
 
-                <Button variant="main" size="large">{titleModal}</Button>
+                <Button variant="main" size="large" onClick={() => verifyCarrer()}>{titleModal}</Button>
             </>
         );
 
+    }
+
+    function verifyCarrer() {
+        const isNameValid = validateName(valueInputName);
+        const isInputValid = validateLevel(valueInputLevel);
+
+        if(!isNameValid) {
+            return setErrorName("O nome do cargo deve ter mais que 2 caracteres!");
+        };
+
+        if(!isInputValid) {
+            return setErrorLevel("O nivel deve ter mais que 5 caracteres!")
+        }
+
+        if(typeModal === "create") {
+            alert("Cargo cadastrado!")
+        } else {
+            alert("Cargo editado!")
+        }
     }
 
     return(
