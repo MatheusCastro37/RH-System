@@ -11,8 +11,22 @@ interface PositionType {
   id: number;
   nomeDoCargo: string;
   nivel: string;
-  salario: number; 
+  salario: number;
 }
+
+interface Collaborator {
+  id?: number; 
+  name: string;
+  cpf: string; 
+  cep: string; 
+  logradouro: string; 
+  numero: string; 
+  cidade: string; 
+  estado: string; 
+  cargoId: number; 
+  nivel: string; 
+  salario: number; 
+} 
 
 const Container = styled.div`
   width: 100vw;
@@ -22,6 +36,10 @@ const Container = styled.div`
   flex-direction: row;
   align-items: start;
   gap: 20px;
+
+  .modal {
+    width: 500px;
+  } 
 `
 
 const AddBox = styled.div`
@@ -34,6 +52,7 @@ const AddBox = styled.div`
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   `
+
 const Table = styled.div`
   padding: 20px;
   background-color:${theme.grayscale.bgLightGrey};
@@ -145,9 +164,11 @@ export default function Login() {
   const [logradouro, setLogradouro] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
-  const [cargo, setCargo] = useState("");
+  const [cargo, setCargo] = useState(0);
   const [nivel, setNivel] = useState("");
-  const [salario, setSalario] = useState("");
+  const [salario, setSalario] = useState(0);
+  const [postionInputsDisable, setPositionInputsDisable] = useState(false);
+  const [cepInputsDisable, setCepInputsDisable] = useState(false)
   const [numero, setNumero] = useState("");
   const [cargos, setCargos] = useState<PositionType[]>();
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -155,42 +176,73 @@ export default function Login() {
 
 
   useEffect(() => {
-    if (cep.length == 8) {
+    if (isValidCep(cep)) {
       getLocationByCep(cep)
+      setCepInputsDisable(true)
+    } else {
+      setCepInputsDisable(false)
+      setLogradouro("")
+      setCidade("")
+      setEstado("")
     }
   }, [cep])
 
 
+  function isValidCep(cep: string): boolean {
+    const cepPattern = /^[0-9]{5}-?[0-9]{3}$/;
+    return cepPattern.test(cep);
+  }
+
+
+
   useEffect(() => { getPositions() }, [])
+
+  useEffect(() => {
+
+    if (cargo == 0) {
+      setNivel("")
+      setSalario(0)
+      setPositionInputsDisable(false)
+      return;
+    }
+    if (cargos) {
+      const CargoSelecionado = cargos.filter(elemente => elemente.id == cargo)
+      setNivel(CargoSelecionado[0].nivel)
+      setSalario(CargoSelecionado[0].salario)
+      setPositionInputsDisable(true)
+    }
+
+  }, [cargo])
 
   async function getPositions(): Promise<PositionType[] | null> {
     try {
-      
+
       const res = await fetch(`${supabaseUrl}/rest/v1/Cargo`, {
         headers: {
           method: 'GET',
           apikey
         }
       })
-      
-      if(!res) {
+
+      if (!res) {
         throw new Error
       }
 
       const data: PositionType[] = await res.json();
- 
-       return data
+      setCargos(data)
+
+      return data
     } catch (error) {
       console.error("Erro ao buscar Cargos na API: " + error)
       return null;
     }
   }
 
-  function showPositionOptions (positions: PositionType[]) {
+  function showPositionOptions(positions: PositionType[]) {
     return positions.map(position => (
-      <option value="0">{position.nomeDoCargo}</option>
+      <option key={position.id} value={position.id}>{position.nomeDoCargo}</option>
     ))
-  } 
+  }
 
   async function getLocationByCep(cep: string) {
     try {
@@ -201,7 +253,7 @@ export default function Login() {
         setLogradouro(data.logradouro)
         setCidade(data.localidade)
         setEstado(data.estado)
-      }
+      } 
     } catch (error) {
       console.error('Erro ao buscar CEP: ' + error)
     }
@@ -210,9 +262,41 @@ export default function Login() {
   function openModal() {
     setModalIsVisible(true)
   }
+
   function closeModal() {
     setModalIsVisible(false)
+    setName("")
+    setCpf("")
+    setCep("")
+    setLogradouro("")
+    setCidade("")
+    setNumero("")
+    setEstado("")
+    setCargo(0)
+    setNivel("")
+    setSalario(0)
   }
+
+  const newCollaborator: Collaborator = {
+    name,
+    cpf,
+    cep,
+    logradouro,
+    numero,
+    cidade,
+    estado,
+    cargoId: cargo,
+    nivel,
+    salario
+  } 
+
+  function verifyCollaborator(collaborator: Collaborator) {
+    
+  }
+
+  async function RegisterNewCollaborator (collaborator: Collaborator) {
+
+  } 
 
   return (
     <Container>
@@ -223,16 +307,17 @@ export default function Login() {
           <Input height="small" value={cpf} onChange={e => setCpf(e.target.value)} textLabel={<Typography variant="body-XS">CPF</Typography>}></Input>
           <Input height="small" value={cep} onChange={e => setCep(e.target.value)} textLabel={<Typography variant="body-XS">CEP</Typography>}></Input>
           <Input height="small" value={numero} onChange={e => setNumero(e.target.value)} textLabel={<Typography variant="body-XS">Número</Typography>}></Input>
-          <Input height="small" value={logradouro} onChange={e => setLogradouro(e.target.value)} textLabel={<Typography variant="body-XS">Logradouro</Typography>}></Input>
-          <Input height="small" value={cidade} onChange={e => setCidade(e.target.value)} textLabel={<Typography variant="body-XS">Cidade</Typography>}></Input>
-          <Input height="small" value={estado} onChange={e => setEstado(e.target.value)} textLabel={<Typography variant="body-XS">Estado</Typography>}></Input>
-          <Select name="" id="">
+          <Input height="small" value={logradouro} disabled={cepInputsDisable} onChange={e => setLogradouro(e.target.value)} textLabel={<Typography variant="body-XS">Logradouro</Typography>}></Input>
+          <Input height="small" value={cidade} disabled={cepInputsDisable}  onChange={e => setCidade(e.target.value)} textLabel={<Typography variant="body-XS">Cidade</Typography>}></Input>
+          <Input height="small" value={estado} disabled={cepInputsDisable}  onChange={e => setEstado(e.target.value)} textLabel={<Typography variant="body-XS">Estado</Typography>}></Input>
+          <Select onChange={e => setCargo(Number(e.target.value))}>
             <option value="0"><Typography variant="body-XS">Selecione Um Cargo</Typography></option>
+            {cargos && showPositionOptions(cargos)}
           </Select>
-          <Input height="small" value={nivel} onChange={e => setNivel(e.target.value)} textLabel={<Typography variant="body-XS">Nivel</Typography>}></Input>
-          <Input height="small" value={salario} onChange={e => setSalario(e.target.value)} textLabel={<Typography variant="body-XS">Salário</Typography>}></Input>
+          <Input height="small" value={nivel} disabled={postionInputsDisable} onChange={e => setNivel(e.target.value)} textLabel={<Typography variant="body-XS">Nivel</Typography>}></Input>
+          <Input height="small" value={salario} disabled={postionInputsDisable} onChange={e => setSalario(Number(e.target.value))} textLabel={<Typography variant="body-XS">Salário</Typography>}></Input>
           <DivButtons>
-            <Button size="large" variant="secondary"><Typography variant="body-XS">Cancelar</Typography></Button>
+            <Button size="large" variant="secondary" onClick={closeModal}><Typography variant="body-XS" >Cancelar</Typography></Button>
             <Button size="large" variant="main"><Typography variant="body-XS">Adicionar</Typography></Button>
           </DivButtons>
         </InputContainer>
