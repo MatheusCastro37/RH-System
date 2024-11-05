@@ -8,6 +8,10 @@ export const BodyWrapper = styled.div`
     align-items: flex-start;
     gap: 10px;
     padding: 20px;
+
+    label{
+        text-align: start;
+    }
 `;
 
 export const ListingContainer = styled.div`

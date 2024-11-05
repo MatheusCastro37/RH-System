@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const InputContainer = styled.div<{ $error?: string; $disable: boolean; $isActive: boolean }>`
     display: flex;
     flex-direction: column;
-    width: fit-content;
+    width: 100%;
     
     >div{
         background-color: #FFFFFF;
@@ -30,7 +30,7 @@ export const InputContainer = styled.div<{ $error?: string; $disable: boolean; $
     `;
 
 export const InputComponent = styled.input<{ $size: string }>`
-    width: 167px;
+    width: 100%;
     height: ${props => props.$size === "default" ? "44px" : "36px"};
     padding: ${props => props.$size === "default" ? "12px" : "8px 12px"};
     border-radius: 2px;
