@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import Button from "../../Button";
 import Typography from "../../Typography";
 import { BodyWrapper, ListingContainer } from "./styles";
-import { dataType } from "./types";
+import { dataType, typeModal } from "./types";
 import Modal from "../../Modal";
 import Input from "../../Input";
 
@@ -14,30 +14,17 @@ function convertNumberToReal(value: number) {
     return valueFormatted;
 }
 
-function showData(data: dataType[], actionButton: (a: boolean) => void) {
-    return data.map(value => (
-        <tr key={value.id}>
-            <td><Typography variant="body-XS">{value.nomeDoCargo}</Typography></td>
-            <td><Typography variant="body-XS">{value.nivel}</Typography></td>
-            <td><Typography variant="body-XS">{convertNumberToReal(value.salario)}</Typography></td>
-            <td><Button variant="secondary" size="small" onClick={() => actionButton(true)}>Editar</Button></td>
-        </tr>
-    ))
-}
-
-function formatSalary(event: ChangeEvent<HTMLInputElement>, setState: (valueState: React.SetStateAction<string>) => void){
-    let value = event.target.value.replace(/\D/g, "");
-
-    value = (parseFloat(value) / 100).toFixed(2).replace(".", ",");
-    value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-
-    setState("R$ " + value);
-}
-
 export default function Carrer() {
-    const [salaryList, setSalaryList] = useState([]);
     const [isOpenModal, setIsOpenModal] = useState(false);
+    const [typeModal, setTypeModal] = useState<typeModal>("create");
+    
+    const [titleModal, setTitleModal] = useState("Adicionar");
+    const [salaryList, setSalaryList] = useState([]);
     const [salaryInput, setSalaryInput] = useState("R$ 0,00");
+    const [valueInputName, setValueInputName] = useState("");
+    const [valueInputLevel, setvalueInputLevel] = useState("");
+
+    const [editButton, setEditButton] = useState<Element>();
 
     useEffect(() => {
         async function getSalaryData() {
@@ -58,31 +45,80 @@ export default function Carrer() {
 
     }, []);
 
+    useEffect(() => {
+        if (typeModal === "edit" && editButton) {
+            setSalaryInput(editButton.parentElement?.parentElement?.children[2]?.textContent ?? "R$ 0,00");
+            setValueInputName(editButton!.parentElement!.parentElement!.firstElementChild!.textContent!);
+            setvalueInputLevel(editButton!.parentElement!.parentElement!.children[1].textContent!);
+            setTitleModal("editar");
+        }
+    }, [typeModal, editButton]);
+    
+    function showData(data: dataType[]) {
+        return data.map(value => (
+            <tr key={value.id}>
+                <td><Typography variant="body-XS">{value.nomeDoCargo}</Typography></td>
+                <td><Typography variant="body-XS">{value.nivel}</Typography></td>
+                <td><Typography variant="body-XS">{convertNumberToReal(value.salario)}</Typography></td>
+                <td><Button variant="secondary" size="small" onClick={(event) => {
+                    setEditButton(event.currentTarget);
+                    setIsOpenModal(true);
+                    setTypeModal("edit");
+                }}>Editar</Button></td>
+            </tr>
+        ))
+    }
+
+
+    function formatSalary(event: ChangeEvent<HTMLInputElement>){
+        let value = event.target.value.replace(/\D/g, "");
+    
+        value = (parseFloat(value) / 100).toFixed(2).replace(".", ",");
+        value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+    
+        setSalaryInput("R$ " + value);
+    }
+
+    function editModal() {
+        return (
+            <>
+                <Typography variant="H3">{titleModal}</Typography>
+
+                <Input value={valueInputName} height="default" textLabel={<Typography variant="body-S">Nome do cargo:</Typography>} placeholder="Ex: desenvolvedor Front-End" />
+                <Input value={valueInputLevel} height="default" textLabel={<Typography variant="body-S">Nivel:</Typography>} placeholder="Ex: Junior" />
+                <Input
+                type="text"
+                height="default"
+                textLabel={<Typography variant="body-S">Salario:</Typography>}
+                placeholder="Ex: R$:1.800,00"
+                value={salaryInput}
+                onChange={formatSalary}/>
+
+                <Button variant="main" size="large">{titleModal}</Button>
+            </>
+        );
+
+    }
+
     return(
         <>
             <BodyWrapper>
                     <Modal isVisible={isOpenModal} onClose={() => {
                         setSalaryInput("R$ 0,00");
                         setIsOpenModal(false);
-                    }}>
-                        <Typography variant="H3">Adicionar</Typography>
-
-                        <Input height="default" textLabel={<Typography variant="body-S">Nome do cargo:</Typography>} placeholder="Ex: desenvolvedor Front-End" />
-                        <Input height="default" textLabel={<Typography variant="body-S">Nivel:</Typography>} placeholder="Ex: Junior" />
-                        <Input
-                        type="text"
-                        height="default"
-                        textLabel={<Typography variant="body-S">Salario:</Typography>}
-                        placeholder="Ex: R$:1.800,00"
-                        value={salaryInput}
-                        onChange={(event) => formatSalary(event, setSalaryInput)}/>
-
-                        <Button variant="main" size="large">Adicionar</Button>
-                    </Modal>
+                    }}>{editModal()}</Modal>
                 <ListingContainer>
                     <div>
                         <Typography variant="H4">Cargos</Typography>
-                        <Button variant="main" size="medium" onClick={() => setIsOpenModal(true)}>Adicionar</Button>
+                        <Button variant="main" size="medium" onClick={() => {
+                            setIsOpenModal(true);
+                            setTypeModal("create");
+                            setTitleModal("adicionar");
+                            setValueInputName("");
+                            setvalueInputLevel("");
+                        }}>
+                            Adicionar
+                        </Button>
                     </div>
                     <table>
                         <thead>
@@ -94,7 +130,7 @@ export default function Carrer() {
                             </tr>
                         </thead>
                         <tbody>
-                            {showData(salaryList, setIsOpenModal)}
+                            {showData(salaryList)}
                         </tbody>
                     </table>
                 </ListingContainer>
