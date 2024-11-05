@@ -6,6 +6,7 @@ import AddSvg from '../../assets/addButton.svg'
 import { useEffect, useState } from "react";
 import Modal from "../../Modal";
 import Input from "../../Input";
+import { json } from "react-router-dom";
 
 interface PositionType {
   id: number;
@@ -15,18 +16,16 @@ interface PositionType {
 }
 
 interface Collaborator {
-  id?: number; 
-  name: string;
-  cpf: string; 
-  cep: string; 
-  logradouro: string; 
-  numero: string; 
-  cidade: string; 
-  estado: string; 
-  cargoId: number; 
-  nivel: string; 
-  salario: number; 
-} 
+  id?: number;
+  nome: string;
+  cpf: string;
+  cep: string;
+  logradouro: string;
+  numero: string;
+  cidade: string;
+  estado: string;
+  idCargo: number;
+}
 
 const Container = styled.div`
   width: 100vw;
@@ -36,10 +35,6 @@ const Container = styled.div`
   flex-direction: row;
   align-items: start;
   gap: 20px;
-
-  .modal {
-    width: 500px;
-  } 
 `
 
 const AddBox = styled.div`
@@ -155,7 +150,7 @@ appearance: none; /* Remove a aparência padrão */
 }
 `
 
-export default function Login() {
+export default function Collaborator() {
 
   const [modalIsVisible, setModalIsVisible] = useState(false);
   const [name, setName] = useState("");
@@ -171,6 +166,7 @@ export default function Login() {
   const [cepInputsDisable, setCepInputsDisable] = useState(false)
   const [numero, setNumero] = useState("");
   const [cargos, setCargos] = useState<PositionType[]>();
+  const [collaboratorList, setCollaboratorsList] = useState<Collaborator[]>();
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const apikey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -196,6 +192,7 @@ export default function Login() {
 
 
   useEffect(() => { getPositions() }, [])
+  useEffect(() => { getCollaborators() }, [])
 
   useEffect(() => {
 
@@ -238,10 +235,62 @@ export default function Login() {
     }
   }
 
+  async function getCollaborators(): Promise<Collaborator[] | null> {
+    try {
+
+      const res = await fetch(`${supabaseUrl}/rest/v1/Colaborador`, {
+        headers: {
+          method: 'GET',
+          apikey
+        }
+      })
+
+      if (!res) {
+        throw new Error
+      }
+
+      const data: Collaborator[] = await res.json();
+      setCollaboratorsList(data);
+      console.log(data)
+      return data;
+    } catch (error) {
+      console.error("Erro ao buscar Cargos na API: " + error)
+      return null;
+    }
+  }
+
   function showPositionOptions(positions: PositionType[]) {
     return positions.map(position => (
       <option key={position.id} value={position.id}>{position.nomeDoCargo}</option>
     ))
+  }
+
+  function showCollaboratorsRows(collaborators: Collaborator[]) {
+
+    return collaborators.map(collaborator => {
+      let colabCareer = cargos;
+
+      if(cargos) {
+        colabCareer = cargos.filter(cargo => cargo.id == collaborator.idCargo);
+      }
+      
+      return (
+
+      <tr key={collaborator.id}>
+        <td><Typography variant="body-XS">{collaborator.nome}</Typography></td>
+        <td><Typography variant="body-XS">{collaborator.cpf}</Typography></td>
+        <td><Typography variant="body-XS">{collaborator.cep}</Typography></td>
+        <td><Typography variant="body-XS">{collaborator.logradouro}</Typography></td>
+        <td><Typography variant="body-XS">{collaborator.numero}</Typography></td>
+        <td><Typography variant="body-XS">{collaborator.cidade}</Typography></td>
+        <td><Typography variant="body-XS">{collaborator.estado}</Typography></td>
+        <td><Typography variant="body-XS">{colabCareer && colabCareer[0].nomeDoCargo}</Typography></td>
+        <td><Typography variant="body-XS">{colabCareer && colabCareer[0].nivel}</Typography></td>
+        <td><Typography variant="body-XS">{colabCareer && colabCareer[0].salario}</Typography></td>
+        <td><Button size="small" variant="text" ><Typography variant="body-XS">Editar</Typography></Button></td>
+      </tr>
+      )
+    })
   }
 
   async function getLocationByCep(cep: string) {
@@ -253,7 +302,7 @@ export default function Login() {
         setLogradouro(data.logradouro)
         setCidade(data.localidade)
         setEstado(data.estado)
-      } 
+      }
     } catch (error) {
       console.error('Erro ao buscar CEP: ' + error)
     }
@@ -278,25 +327,35 @@ export default function Login() {
   }
 
   const newCollaborator: Collaborator = {
-    name,
+    nome: name,
     cpf,
     cep,
     logradouro,
     numero,
     cidade,
     estado,
-    cargoId: cargo,
-    nivel,
-    salario
-  } 
-
-  function verifyCollaborator(collaborator: Collaborator) {
-    
+    idCargo: cargo
   }
 
-  async function RegisterNewCollaborator (collaborator: Collaborator) {
+  async function RegisterNewCollaborator(collaborator: Collaborator): Promise<void> {
+    try {
+      const res = fetch(`${supabaseUrl}/rest/v1/Colaborador`, {
+        method: 'POST',
+        headers: {
+          apikey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ newCollaborator })
+      });
 
-  } 
+      const data = (await res).json();
+
+      console.log(data)
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   return (
     <Container>
@@ -308,8 +367,8 @@ export default function Login() {
           <Input height="small" value={cep} onChange={e => setCep(e.target.value)} textLabel={<Typography variant="body-XS">CEP</Typography>}></Input>
           <Input height="small" value={numero} onChange={e => setNumero(e.target.value)} textLabel={<Typography variant="body-XS">Número</Typography>}></Input>
           <Input height="small" value={logradouro} disabled={cepInputsDisable} onChange={e => setLogradouro(e.target.value)} textLabel={<Typography variant="body-XS">Logradouro</Typography>}></Input>
-          <Input height="small" value={cidade} disabled={cepInputsDisable}  onChange={e => setCidade(e.target.value)} textLabel={<Typography variant="body-XS">Cidade</Typography>}></Input>
-          <Input height="small" value={estado} disabled={cepInputsDisable}  onChange={e => setEstado(e.target.value)} textLabel={<Typography variant="body-XS">Estado</Typography>}></Input>
+          <Input height="small" value={cidade} disabled={cepInputsDisable} onChange={e => setCidade(e.target.value)} textLabel={<Typography variant="body-XS">Cidade</Typography>}></Input>
+          <Input height="small" value={estado} disabled={cepInputsDisable} onChange={e => setEstado(e.target.value)} textLabel={<Typography variant="body-XS">Estado</Typography>}></Input>
           <Select onChange={e => setCargo(Number(e.target.value))}>
             <option value="0"><Typography variant="body-XS">Selecione Um Cargo</Typography></option>
             {cargos && showPositionOptions(cargos)}
@@ -318,7 +377,7 @@ export default function Login() {
           <Input height="small" value={salario} disabled={postionInputsDisable} onChange={e => setSalario(Number(e.target.value))} textLabel={<Typography variant="body-XS">Salário</Typography>}></Input>
           <DivButtons>
             <Button size="large" variant="secondary" onClick={closeModal}><Typography variant="body-XS" >Cancelar</Typography></Button>
-            <Button size="large" variant="main"><Typography variant="body-XS">Adicionar</Typography></Button>
+            <Button size="large" variant="main"><Typography variant="body-XS" >Adicionar</Typography></Button>
           </DivButtons>
         </InputContainer>
       </Modal>
@@ -347,19 +406,8 @@ export default function Login() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><Typography variant="body-XS">Henrique Olivier</Typography></td>
-              <td><Typography variant="body-XS">000.000.000-00</Typography></td>
-              <td><Typography variant="body-XS">00000-000</Typography></td>
-              <td><Typography variant="body-XS">Rua Tal</Typography></td>
-              <td><Typography variant="body-XS">000</Typography></td>
-              <td><Typography variant="body-XS">Suzano</Typography></td>
-              <td><Typography variant="body-XS">São Paulo</Typography></td>
-              <td><Typography variant="body-XS">Estágiario</Typography></td>
-              <td><Typography variant="body-XS">Junior</Typography></td>
-              <td><Typography variant="body-XS">1800</Typography></td>
-              <td><Button size="small" variant="text" ><Typography variant="body-XS">Editar</Typography></Button></td>
-            </tr>
+            
+            {collaboratorList && showCollaboratorsRows(collaboratorList)}
           </tbody>
         </table>
       </Table>
