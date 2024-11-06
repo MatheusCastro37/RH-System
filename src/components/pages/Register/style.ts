@@ -44,6 +44,10 @@ export const WrapperForm = styled.div`
     h2{
         text-align: center;
     }
+
+    div.link-login p{
+        text-align: center;
+    }
 `;
 
 export const ContainerButton = styled.div`

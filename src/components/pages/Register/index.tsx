@@ -8,6 +8,7 @@ import { supabase } from "../../supabase";
 import Notification from "../../notfication";
 import { NotificationType } from "../../notfication/types";
 import { notification } from "./type";
+import { Link, useNavigate } from "react-router-dom";
 
 function validateName(name: string) {
     return name.length > 2;
@@ -51,6 +52,8 @@ export default function Register(){
     const [headerError, setHeaderError] = useState("");
     const [describeError, setDescribeError] = useState("");
 
+    const navigate = useNavigate();
+
     function verify() {
         const inputName = document.querySelector("#input-name") as HTMLInputElement;
         const inputEmail = document.querySelector("#input-email") as HTMLInputElement;
@@ -92,7 +95,10 @@ export default function Register(){
             showLoading(btnRegister, "Cadastrando...");
             setTimeout(async () => {
                 await registerUser(inputName.value, inputEmail.value, inputPassword.value);
-                btnRegister.removeAttribute("disabled")
+                btnRegister.removeAttribute("disabled");
+                setTimeout(() => {
+                    navigate("/")
+                }, 2000)
             }, 1500)
         }
     }
@@ -108,6 +114,7 @@ export default function Register(){
         }, 2000);
 
         if(type === "error") {
+            setTypeNotification("warning");
             setHeaderError("Aviso!");
             setDescribeError("Usuario já cadastrado!")
         } else {
@@ -172,6 +179,9 @@ export default function Register(){
                     textError={errorPasswordConfirm}
                     placeholder="Ex: 123456"
                 />
+                <div className="link-login">
+                    <Typography variant="body-XS">Já possui cadastro? <Link to="/">Faça login aqui</Link></Typography>
+                </div>
                 <ContainerButton>
                     <Button id="btn-register" variant="main" size="medium" onClick={verify} icon={spinner}>
                         <p>Cadastrar</p>
