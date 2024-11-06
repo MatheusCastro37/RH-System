@@ -3,9 +3,9 @@ type size = "default" | "small";
 export interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     height: size;
 
-    textLabel?: string;
+    textLabel?: string | React.ReactNode;
 
-    textError?: string;
+    textError?: string | React.ReactNode;
 
     icon?: string;
     disabled?: boolean;
