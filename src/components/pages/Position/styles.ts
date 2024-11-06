@@ -31,7 +31,7 @@ export const BodyWrapper = styled.div`
     }
 
     .notification.hidden{
-        bottom: 150%;
+        bottom: 450%;
     }
 
     .notification.show{
@@ -42,11 +42,10 @@ export const BodyWrapper = styled.div`
 export const ListingContainer = styled.div`
     width: 100%;
     max-width: 780px;
-    background-color: ${theme.grayscale.black};
+    background-color: ${theme.grayscale.bgLightGrey};
     border-radius: 10px;
-    border: 1px solid ${theme.grayscale.white};
     padding: 10px 15px;
-    color: ${theme.grayscale.white};
+    box-shadow: 0px 0px 20px 0px ${theme.grayscale.spacer};    ;
 
     div:nth-child(1){
         display: flex;
@@ -66,7 +65,12 @@ export const ListingContainer = styled.div`
     th,
     td{
         text-align: start;
-        border-bottom: 1px solid ${theme.grayscale.white};
+        border-bottom: 1px solid ${theme.grayscale.border};
         padding: 10px 5px;
+    }
+
+    td.action-btn{
+        display: flex;
+        gap: 10px;
     }
 `;

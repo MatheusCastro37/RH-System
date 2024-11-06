@@ -47,7 +47,7 @@ export default function Carrer() {
     const [errorSalary, setErrorSalary] = useState("");
 
     const [editButton, setEditButton] = useState<Element>();
-    const [idButtonEdit, setIdButtonEdit] = useState("");
+    const [idButton, setIdButton] = useState("");
 
     const [classNotification, setClassNotification] = useState("hidden");
     const [typeNotification, setTypeNotification] = useState<NotificationType>("success");
@@ -80,9 +80,15 @@ export default function Carrer() {
             setSalaryInput(editButton.parentElement?.parentElement?.children[2]?.textContent ?? "R$ 0,00");
             setValueInputName(editButton!.parentElement!.parentElement!.firstElementChild!.textContent!);
             setvalueInputLevel(editButton!.parentElement!.parentElement!.children[1].textContent!);
-            setIdButtonEdit(editButton!.parentElement!.parentElement!.getAttribute("id")!);
+            setIdButton(editButton!.parentElement!.parentElement!.getAttribute("id")!);
             setTitleModal("Editar");
             setTitleButtonModal("Editar");
+        } else if(typeModal === "delete") {
+            setvalueInputLevel(editButton!.parentElement!.parentElement!.children[1].textContent!);
+            setValueInputName(editButton!.parentElement!.parentElement!.firstElementChild!.textContent!);
+            setIdButton(editButton!.parentElement!.parentElement!.getAttribute("id")!);
+            setTitleButtonModal("Deletar");
+            setTitleModal("Deletar");
         }
     }, [typeModal, editButton]);
     
@@ -92,11 +98,17 @@ export default function Carrer() {
                 <td><Typography variant="body-XS">{value.nomeDoCargo}</Typography></td>
                 <td><Typography variant="body-XS">{value.nivel}</Typography></td>
                 <td><Typography variant="body-XS">{convertNumberToReal(value.salario)}</Typography></td>
-                <td><Button variant="secondary" size="small" onClick={(event) => {
-                    setEditButton(event.currentTarget);
-                    setIsOpenModal(true);
-                    setTypeModal("edit");
-                }}>Editar</Button></td>
+                <td className="action-btn"><Button variant="main" size="small" onClick={(event) => {
+                        setEditButton(event.currentTarget);
+                        setIsOpenModal(true);
+                        setTypeModal("edit");
+                    }}>Editar</Button>
+                    <Button variant="secondary" size="small" onClick={(event) => {
+                        setEditButton(event.currentTarget);
+                        setIsOpenModal(true);
+                        setTypeModal("delete");
+                    }}>Deletar</Button>    
+                </td>
             </tr>
         ))
     }
@@ -111,42 +123,53 @@ export default function Carrer() {
         setSalaryInput("R$ " + value);
     }
 
-    function editModal() {
-        return (
-            <>
-                <Notification className={`notification ${classNotification}`} header={headerTextNotification} describe={describeTextNotification} model="informer" type={typeNotification}>Deu bom</Notification>
-                <Typography variant="H3">{titleModal}</Typography>
-
-                <Input 
-                type="text"
-                value={valueInputName}
-                onChange={e => setValueInputName(e.target.value)}
-                height="default"
-                textLabel={<Typography variant="body-S">Nome do cargo:</Typography>}
-                textError={errorName}
-                placeholder="Ex: desenvolvedor Front-End" />
-
-                <Input
-                type="text"
-                value={valueInputLevel}
-                onChange={e => setvalueInputLevel(e.target.value)}
-                height="default"
-                textLabel={<Typography variant="body-S">Nivel:</Typography>}
-                textError={errorLevel}
-                placeholder="Ex: Junior" />
-
-                <Input
-                type="text"
-                height="default"
-                textLabel={<Typography variant="body-S">Salario:</Typography>}
-                textError={errorSalary}
-                placeholder="Ex: R$:1.800,00"
-                value={salaryInput}
-                onChange={formatSalary}/>
-
-                <Button className="btn-modal" variant="main" size="large" icon={loading} onClick={(e) => verifyCarrer(e.currentTarget)}>{titleButtonModal}</Button>
-            </>
-        );
+    function editModal(typeModal: typeModal) {
+        if(typeModal === "create" || typeModal === "edit") {
+            return (
+                <>
+                    <Notification className={`notification ${classNotification}`} header={headerTextNotification} describe={describeTextNotification} model="informer" type={typeNotification}>Deu bom</Notification>
+                    <Typography variant="H3">{titleModal}</Typography>
+    
+                    <Input 
+                    type="text"
+                    value={valueInputName}
+                    onChange={e => setValueInputName(e.target.value)}
+                    height="default"
+                    textLabel={<Typography variant="body-S">Nome do cargo:</Typography>}
+                    textError={errorName}
+                    placeholder="Ex: desenvolvedor Front-End" />
+    
+                    <Input
+                    type="text"
+                    value={valueInputLevel}
+                    onChange={e => setvalueInputLevel(e.target.value)}
+                    height="default"
+                    textLabel={<Typography variant="body-S">Nivel:</Typography>}
+                    textError={errorLevel}
+                    placeholder="Ex: Junior" />
+    
+                    <Input
+                    type="text"
+                    height="default"
+                    textLabel={<Typography variant="body-S">Salario:</Typography>}
+                    textError={errorSalary}
+                    placeholder="Ex: R$:1.800,00"
+                    value={salaryInput}
+                    onChange={formatSalary}/>
+    
+                    <Button className="btn-modal" variant="main" size="large" icon={loading} onClick={(e) => verifyCarrer(e.currentTarget)}>{titleButtonModal}</Button>
+                </>
+            );
+        } else {
+            return (
+                <>
+                    <Notification className={`notification ${classNotification}`} header={headerTextNotification} describe={describeTextNotification} model="informer" type={typeNotification}>Deu bom</Notification>
+                    <Typography variant="H3">{titleModal}</Typography>
+                    <Typography variant="body-S">Deseja deletar o {valueInputName}, {valueInputLevel}?</Typography>
+                    <Button className="btn-modal" variant="main" size="medium" icon={loading} onClick={(e) => deleteCarrer(e.currentTarget)}>{titleButtonModal}</Button>
+                </>
+            );
+        }
 
     }
 
@@ -216,7 +239,7 @@ export default function Carrer() {
         let salario = parseInt(salaryFormatted);
         salario = salario/100;
 
-        const res = await fetch(`${url}/rest/v1/Cargo?id=eq.${idButtonEdit}`, {
+        const res = await fetch(`${url}/rest/v1/Cargo?id=eq.${idButton}`, {
             method: 'PATCH',
             headers: {
                 "Content-Type": "application/json",
@@ -234,6 +257,27 @@ export default function Carrer() {
         } else {
             showNotification("error", "Erro ao editar esse cargo!")
         }
+    }
+
+    function deleteCarrer(buttonElement: Element) {
+        showLoading(buttonElement, "Deletando...");
+        setTimeout(async () => {
+            const res = await fetch(`${url}/rest/v1/Cargo?id=eq.${idButton}`,{
+                method: 'DELETE',
+                headers: {
+                    apiKey
+                }
+            });
+    
+            if(res.ok) {
+                showNotification("success", "Cargo deleteado com sucesso!");
+                hideLoading(buttonElement, "Deletar")
+            } else {
+                showNotification("error", "Erro ao deletar esse cargo!")
+                hideLoading(buttonElement, "Deletar")
+            }
+        }, 1300)
+        
     }
 
     function verifyCarrer(buttonElement: Element) {
@@ -284,7 +328,7 @@ export default function Carrer() {
                     setErrorName("");
                     setErrorLevel("");
                     setErrorSalary("");
-                }}>{editModal()}</Modal>
+                }}>{editModal(typeModal)}</Modal>
                 <ListingContainer>
                     <div>
                         <Typography variant="H4">Cargos</Typography>

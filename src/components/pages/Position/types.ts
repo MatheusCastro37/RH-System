@@ -6,4 +6,4 @@ export interface dataType{
   salario: number
 }
 
-export type typeModal = "edit" | "create"
+export type typeModal = "edit" | "create" | "delete";
