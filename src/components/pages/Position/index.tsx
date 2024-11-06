@@ -5,6 +5,9 @@ import { BodyWrapper, ListingContainer } from "./styles";
 import { dataType, typeModal } from "./types";
 import Modal from "../../Modal";
 import Input from "../../Input";
+import loading from "../../assets/spinner.svg";
+import Notification from "../../notfication";
+import { NotificationType } from "../../notfication/types";
 
 function convertNumberToReal(value: number) {
     const valueFormatted = new Intl.NumberFormat('pt-BR', {
@@ -19,7 +22,13 @@ function validateName(name: string) {
 }
 
 function validateLevel(level: string) {
-    return level.length > 5;
+    return level.length > 4;
+}
+
+function validateSalary(salary: string) {
+    const salaryFormatted = salary.replace(/\D/g, "");
+    const salaryConverted = parseInt(salaryFormatted);
+    return salaryConverted >= 1200;
 }
 
 export default function Carrer() {
@@ -27,6 +36,7 @@ export default function Carrer() {
     const [typeModal, setTypeModal] = useState<typeModal>("create");
 
     const [titleModal, setTitleModal] = useState("Adicionar");
+    const [titleButtonModal, setTitleButtonModal] = useState("Adicionar");
     const [salaryList, setSalaryList] = useState([]);
     const [salaryInput, setSalaryInput] = useState("R$ 0,00");
     const [valueInputName, setValueInputName] = useState("");
@@ -37,11 +47,19 @@ export default function Carrer() {
     const [errorSalary, setErrorSalary] = useState("");
 
     const [editButton, setEditButton] = useState<Element>();
+    const [idButtonEdit, setIdButtonEdit] = useState("");
 
+    const [classNotification, setClassNotification] = useState("hidden");
+    const [typeNotification, setTypeNotification] = useState<NotificationType>("success");
+    const [headerTextNotification, setHeaderTextNotification] = useState("");
+    const [describeTextNotification, setDescribeTextNotification] = useState("");
+
+    const [updateList, setUpdateList] = useState(true);
+
+    const url = import.meta.env.VITE_SUPABASE_URL;
+    const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     useEffect(() => {
         async function getSalaryData() {
-            const url = import.meta.env.VITE_SUPABASE_URL;
-            const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     
             const res = await fetch(`${url}/rest/v1/Cargo`, {
                 headers: {
@@ -55,20 +73,22 @@ export default function Carrer() {
 
         getSalaryData();
 
-    }, []);
+    }, [updateList]);
 
     useEffect(() => {
         if (typeModal === "edit" && editButton) {
             setSalaryInput(editButton.parentElement?.parentElement?.children[2]?.textContent ?? "R$ 0,00");
             setValueInputName(editButton!.parentElement!.parentElement!.firstElementChild!.textContent!);
             setvalueInputLevel(editButton!.parentElement!.parentElement!.children[1].textContent!);
-            setTitleModal("editar");
+            setIdButtonEdit(editButton!.parentElement!.parentElement!.getAttribute("id")!);
+            setTitleModal("Editar");
+            setTitleButtonModal("Editar");
         }
     }, [typeModal, editButton]);
     
     function showData(data: dataType[]) {
         return data.map(value => (
-            <tr key={value.id}>
+            <tr id={value.id.toString()} key={value.id}>
                 <td><Typography variant="body-XS">{value.nomeDoCargo}</Typography></td>
                 <td><Typography variant="body-XS">{value.nivel}</Typography></td>
                 <td><Typography variant="body-XS">{convertNumberToReal(value.salario)}</Typography></td>
@@ -94,57 +114,185 @@ export default function Carrer() {
     function editModal() {
         return (
             <>
+                <Notification className={`notification ${classNotification}`} header={headerTextNotification} describe={describeTextNotification} model="informer" type={typeNotification}>Deu bom</Notification>
                 <Typography variant="H3">{titleModal}</Typography>
 
-                <Input value={valueInputName} height="default" textLabel={<Typography variant="body-S">Nome do cargo:</Typography>} textError={errorName} placeholder="Ex: desenvolvedor Front-End" />
-                <Input value={valueInputLevel} height="default" textLabel={<Typography variant="body-S">Nivel:</Typography>} textError={errorLevel} placeholder="Ex: Junior" />
+                <Input 
+                type="text"
+                value={valueInputName}
+                onChange={e => setValueInputName(e.target.value)}
+                height="default"
+                textLabel={<Typography variant="body-S">Nome do cargo:</Typography>}
+                textError={errorName}
+                placeholder="Ex: desenvolvedor Front-End" />
+
+                <Input
+                type="text"
+                value={valueInputLevel}
+                onChange={e => setvalueInputLevel(e.target.value)}
+                height="default"
+                textLabel={<Typography variant="body-S">Nivel:</Typography>}
+                textError={errorLevel}
+                placeholder="Ex: Junior" />
+
                 <Input
                 type="text"
                 height="default"
                 textLabel={<Typography variant="body-S">Salario:</Typography>}
+                textError={errorSalary}
                 placeholder="Ex: R$:1.800,00"
                 value={salaryInput}
                 onChange={formatSalary}/>
 
-                <Button variant="main" size="large" onClick={() => verifyCarrer()}>{titleModal}</Button>
+                <Button className="btn-modal" variant="main" size="large" icon={loading} onClick={(e) => verifyCarrer(e.currentTarget)}>{titleButtonModal}</Button>
             </>
         );
 
     }
 
-    function verifyCarrer() {
-        const isNameValid = validateName(valueInputName);
-        const isInputValid = validateLevel(valueInputLevel);
+    function showLoading(elementButton: Element, textButton: string) {
+        elementButton.firstElementChild?.classList.add("show-loading");
+        elementButton.setAttribute("disabled", "true");
+        setTitleButtonModal(textButton);
+    }
 
-        if(!isNameValid) {
-            return setErrorName("O nome do cargo deve ter mais que 2 caracteres!");
-        };
+    function hideLoading(elementButton: Element, textButton: string) {
+        elementButton.firstElementChild?.classList.remove("show-loading");
+        setTimeout(() => {
+            elementButton.removeAttribute("disabled");
+        }, 2300)
+        setTitleButtonModal(textButton);
+    }
 
-        if(!isInputValid) {
-            return setErrorLevel("O nivel deve ter mais que 5 caracteres!")
+    function showNotification(typeNotification: NotificationType, textDescribe: string) {
+        if(typeNotification === "success") {
+            setClassNotification("show");
+            setTypeNotification(typeNotification);
+            setHeaderTextNotification("Sucesso");
+            setDescribeTextNotification(textDescribe);
+        } else {
+            setClassNotification("show");
+            setTypeNotification(typeNotification);
+            setHeaderTextNotification("Erro");
+            setDescribeTextNotification(textDescribe);
         }
 
-        if(typeModal === "create") {
-            alert("Cargo cadastrado!")
+        setTimeout(() => {
+            setClassNotification("hidden");
+            setUpdateList(!updateList);
+            setTimeout(() => {
+                setIsOpenModal(false);
+            }, 300);
+        }, 2000)
+    }
+
+    async function createCarrer() {
+        const salaryFormatted = salaryInput.replace(/\D/g, "");
+        let salario = parseInt(salaryFormatted);
+        salario = salario/100;
+
+        const res = await fetch(`${url}/rest/v1/Cargo`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                apiKey
+            },
+            body: JSON.stringify({
+                nomeDoCargo: valueInputName,
+                nivel: valueInputLevel,
+                salario
+            })
+        });
+
+        if(res.ok) {
+            showNotification("success", "Cargo cadastrado com sucesso!");
         } else {
-            alert("Cargo editado!")
+            showNotification("error", "Não foi possivel cadastrar o novo cargo!")
+        }
+    }
+
+    async function editCarrer() {
+        const salaryFormatted = salaryInput.replace(/\D/g, "");
+        let salario = parseInt(salaryFormatted);
+        salario = salario/100;
+
+        const res = await fetch(`${url}/rest/v1/Cargo?id=eq.${idButtonEdit}`, {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json",
+                apiKey
+            },
+            body: JSON.stringify({
+                nomeDoCargo: valueInputName,
+                nivel: valueInputLevel,
+                salario
+            })
+        });
+
+        if(res.ok) {
+            showNotification("success", "Cargo editado com sucesso!")
+        } else {
+            showNotification("error", "Erro ao editar esse cargo!")
+        }
+    }
+
+    function verifyCarrer(buttonElement: Element) {
+        const isNameValid = validateName(valueInputName);
+        const isLevelValid = validateLevel(valueInputLevel);
+        const isSalaryValid = validateSalary(salaryInput);
+
+        if(!isNameValid) {
+            setErrorName("O nome do cargo deve ter mais que 2 caracteres!");
+        } else {
+            setErrorName("");
+        };
+
+        if(!isLevelValid) {
+            setErrorLevel("O nivel deve ter mais que 5 caracteres!")
+        } else {
+            setErrorLevel("");
+        }
+
+        if(!isSalaryValid) {
+            setErrorSalary("O salario deve ser maior que 1200 Reais!")
+        } else {
+            setErrorSalary("");
+        }
+
+        if(typeModal === "create" && isNameValid && isLevelValid && isSalaryValid) {
+            showLoading(buttonElement, "Adicionando...");
+            
+            setTimeout(async () => {
+                await createCarrer();
+                hideLoading(buttonElement, "Adicionar");
+            }, 1300);
+        } else if(typeModal === "edit" && isNameValid && isLevelValid && isSalaryValid) {
+            showLoading(buttonElement, "Editando...");
+            setTimeout(async () => {
+                await editCarrer();
+                hideLoading(buttonElement, "Editar");
+            }, 1300);
         }
     }
 
     return(
         <>
             <BodyWrapper>
-                    <Modal isVisible={isOpenModal} onClose={() => {
-                        setSalaryInput("R$ 0,00");
-                        setIsOpenModal(false);
-                    }}>{editModal()}</Modal>
+                <Modal isVisible={isOpenModal} onClose={() => {
+                    setSalaryInput("R$ 0,00");
+                    setIsOpenModal(false);
+                    setErrorName("");
+                    setErrorLevel("");
+                    setErrorSalary("");
+                }}>{editModal()}</Modal>
                 <ListingContainer>
                     <div>
                         <Typography variant="H4">Cargos</Typography>
                         <Button variant="main" size="medium" onClick={() => {
                             setIsOpenModal(true);
                             setTypeModal("create");
-                            setTitleModal("adicionar");
+                            setTitleModal("Adicionar");
+                            setTitleButtonModal("Adicionar");
                             setValueInputName("");
                             setvalueInputLevel("");
                         }}>
