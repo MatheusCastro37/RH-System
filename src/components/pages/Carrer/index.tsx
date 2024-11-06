@@ -98,12 +98,12 @@ export default function Carrer() {
                 <td><Typography variant="body-XS">{value.nomeDoCargo}</Typography></td>
                 <td><Typography variant="body-XS">{value.nivel}</Typography></td>
                 <td><Typography variant="body-XS">{convertNumberToReal(value.salario)}</Typography></td>
-                <td className="action-btn"><Button variant="main" size="small" onClick={(event) => {
+                <td className="action-btn"><Button variant="text" size="small" onClick={(event) => {
                         setEditButton(event.currentTarget);
                         setIsOpenModal(true);
                         setTypeModal("edit");
                     }}>Editar</Button>
-                    <Button variant="secondary" size="small" onClick={(event) => {
+                    <Button variant="text" size="small" onClick={(event) => {
                         setEditButton(event.currentTarget);
                         setIsOpenModal(true);
                         setTypeModal("delete");
@@ -165,7 +165,7 @@ export default function Carrer() {
                 <>
                     <Notification className={`notification ${classNotification}`} header={headerTextNotification} describe={describeTextNotification} model="informer" type={typeNotification}>Deu bom</Notification>
                     <Typography variant="H3">{titleModal}</Typography>
-                    <Typography variant="body-S">Deseja deletar o {valueInputName}, {valueInputLevel}?</Typography>
+                    <Typography variant="body-S">Deseja deletar o cargo {valueInputName}, {valueInputLevel}?</Typography>
                     <Button className="btn-modal" variant="main" size="medium" icon={loading} onClick={(e) => deleteCarrer(e.currentTarget)}>{titleButtonModal}</Button>
                 </>
             );

@@ -65,7 +65,6 @@ export const ListingContainer = styled.div`
     th,
     td{
         text-align: start;
-        border-bottom: 1px solid ${theme.grayscale.border};
         padding: 10px 5px;
     }
 
