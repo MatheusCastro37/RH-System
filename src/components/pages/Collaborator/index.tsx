@@ -6,7 +6,8 @@ import AddSvg from '../../assets/addButton.svg'
 import { useEffect, useState } from "react";
 import Modal from "../../Modal";
 import Input from "../../Input";
-import { json } from "react-router-dom";
+import { NotificationType } from "../../notfication/types";
+import Notification from "../../notfication";
 
 interface PositionType {
   id: number;
@@ -146,11 +147,24 @@ appearance: none; /* Remove a aparência padrão */
   outline: none;
   border-color: ${theme.corporate.purple};
 }
+`
 
-}
+const NotificationDiv = styled.div<{ $isVisible: boolean }>`
+  position: absolute;
+  top: ${props => props.$isVisible ? '10%' : '-100%'};
+  left: 50%;
+  transform: translate(-50%,-50%);
+  transition: all 0.4s;
+  z-index: 9999;
 `
 
 export default function Collaborator() {
+
+
+  const [notificationDescribe, setNotificationDescribe] = useState("");
+  const [notificationHeader, setNotificationHeader] = useState("");
+  const [notificationType, setNotificationType] = useState<NotificationType>("inform");
+  const [notificationIsVisible, setNotificationIsVisible] = useState(false);
 
   const [modalIsVisible, setModalIsVisible] = useState(false);
   const [name, setName] = useState("");
@@ -167,6 +181,9 @@ export default function Collaborator() {
   const [numero, setNumero] = useState("");
   const [cargos, setCargos] = useState<PositionType[]>();
   const [collaboratorList, setCollaboratorsList] = useState<Collaborator[]>();
+  const [ModalFunction, setModalFunction] = useState<'edit' | 'add'>('add')
+  const [modalConfirmVisible, setModalConfirmVisible] = useState(false)
+  const [idToEdit, setIdToEdit] = useState(0)
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const apikey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -175,7 +192,7 @@ export default function Collaborator() {
     if (isValidCep(cep)) {
       getLocationByCep(cep)
       setCepInputsDisable(true)
-    } else {
+    } else if (cep) {
       setCepInputsDisable(false)
       setLogradouro("")
       setCidade("")
@@ -189,10 +206,37 @@ export default function Collaborator() {
     return cepPattern.test(cep);
   }
 
+  function isValidCPF(cpf: string): boolean {
+    // Remove caracteres não numéricos
+    cpf = cpf.replace(/[^\d]+/g, '');
+
+    // Verifica se o CPF tem 11 dígitos ou é uma sequência de dígitos iguais
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+    // Calcula o primeiro dígito verificador
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cpf.charAt(i)) * (10 - i);
+    }
+    let firstCheck = (sum * 10) % 11;
+    if (firstCheck === 10 || firstCheck === 11) firstCheck = 0;
+    if (firstCheck !== parseInt(cpf.charAt(9))) return false;
+
+    // Calcula o segundo dígito verificador
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(cpf.charAt(i)) * (11 - i);
+    }
+    let secondCheck = (sum * 10) % 11;
+    if (secondCheck === 10 || secondCheck === 11) secondCheck = 0;
+    if (secondCheck !== parseInt(cpf.charAt(10))) return false;
+
+    return true;
+  }
 
 
-  useEffect(() => { getPositions() }, [])
-  useEffect(() => { getCollaborators() }, [])
+  useEffect(() => { getPositions() }, [modalIsVisible])
+  useEffect(() => { getCollaborators() }, [notificationIsVisible])
 
   useEffect(() => {
 
@@ -270,30 +314,72 @@ export default function Collaborator() {
     return collaborators.map(collaborator => {
       let colabCareer = cargos;
 
-      if(cargos) {
+      if (cargos) {
         colabCareer = cargos.filter(cargo => cargo.id == collaborator.idCargo);
       }
-      
+
       return (
 
-      <tr key={collaborator.id}>
-        <td><Typography variant="body-XS">{collaborator.nome}</Typography></td>
-        <td><Typography variant="body-XS">{collaborator.cpf}</Typography></td>
-        <td><Typography variant="body-XS">{collaborator.cep}</Typography></td>
-        <td><Typography variant="body-XS">{collaborator.logradouro}</Typography></td>
-        <td><Typography variant="body-XS">{collaborator.numero}</Typography></td>
-        <td><Typography variant="body-XS">{collaborator.cidade}</Typography></td>
-        <td><Typography variant="body-XS">{collaborator.estado}</Typography></td>
-        <td><Typography variant="body-XS">{colabCareer && colabCareer[0].nomeDoCargo}</Typography></td>
-        <td><Typography variant="body-XS">{colabCareer && colabCareer[0].nivel}</Typography></td>
-        <td><Typography variant="body-XS">{colabCareer && colabCareer[0].salario}</Typography></td>
-        <td><Button size="small" variant="text" ><Typography variant="body-XS">Editar</Typography></Button></td>
-      </tr>
+        <tr key={collaborator.id} data-id={collaborator.id}>
+          <td><Typography variant="body-XS">{collaborator.nome}</Typography></td>
+          <td><Typography variant="body-XS">{collaborator.cpf}</Typography></td>
+          <td><Typography variant="body-XS">{collaborator.cep}</Typography></td>
+          <td><Typography variant="body-XS">{collaborator.logradouro}</Typography></td>
+          <td><Typography variant="body-XS">{collaborator.numero}</Typography></td>
+          <td><Typography variant="body-XS">{collaborator.cidade}</Typography></td>
+          <td><Typography variant="body-XS">{collaborator.estado}</Typography></td>
+          <td><Typography variant="body-XS">{colabCareer && colabCareer[0].nomeDoCargo}</Typography></td>
+          <td><Typography variant="body-XS">{colabCareer && colabCareer[0].nivel}</Typography></td>
+          <td><Typography variant="body-XS">
+            {colabCareer && colabCareer[0].salario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })}</Typography></td>
+          <td><Button size="small" variant="text" onClick={e => {
+            const target = e.target as HTMLElement;
+            const row = target.parentElement?.parentElement?.parentElement;
+            if (row) {
+              const collabId = row.dataset.id
+              openEditCollaborator(Number(collabId))
+            }
+          }}><Typography variant="body-XS">Editar</Typography></Button></td>
+          <td><Button size="small" variant="text" onClick={e => {
+            const target = e.target as HTMLElement;
+            const row = target.parentElement?.parentElement?.parentElement;
+            if (row) {
+              const collabId = row.dataset.id
+              openModalConfirm()
+              setIdToEdit(Number(collabId))
+            }
+          }}><Typography variant="body-XS" >Remover</Typography></Button></td>
+        </tr>
       )
     })
   }
 
+  function openEditCollaborator(collabId: number) {
+    if (collaboratorList) {
+      const collabToEdit = collaboratorList.find(collaborator => (collaborator.id == collabId))
+      console.log(collabToEdit)
+
+      if (!collabToEdit) {
+        showNotification('Houve um erro ao tentar editar o usuário, por favor tente mais tarde.', 'Erro ao editar', 'error', 4000)
+        return;
+      }
+
+      setIdToEdit(collabId)
+      setName(collabToEdit.nome)
+      setCpf(collabToEdit.cpf)
+      setCep(collabToEdit.cep)
+      setLogradouro(collabToEdit.logradouro)
+      setNumero(collabToEdit.numero)
+      setCidade(collabToEdit.cidade)
+      setEstado(collabToEdit.estado)
+      setCargo(collabToEdit.idCargo)
+      setModalFunction('edit')
+      openModal()
+    }
+  }
+
   async function getLocationByCep(cep: string) {
+
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data = await res.json()
@@ -312,8 +398,18 @@ export default function Collaborator() {
     setModalIsVisible(true)
   }
 
+  function openAddModal() {
+    setModalFunction('add');
+    clearModal();
+    openModal();
+  }
+
   function closeModal() {
     setModalIsVisible(false)
+    clearModal()
+  }
+
+  function clearModal() {
     setName("")
     setCpf("")
     setCep("")
@@ -324,41 +420,169 @@ export default function Collaborator() {
     setCargo(0)
     setNivel("")
     setSalario(0)
+    setCepInputsDisable(false)
   }
 
-  const newCollaborator: Collaborator = {
-    nome: name,
-    cpf,
-    cep,
-    logradouro,
-    numero,
-    cidade,
-    estado,
-    idCargo: cargo
-  }
-
-  async function RegisterNewCollaborator(collaborator: Collaborator): Promise<void> {
+  async function deleteUser() {
     try {
-      const res = fetch(`${supabaseUrl}/rest/v1/Colaborador`, {
-        method: 'POST',
+      const res = await fetch(`${supabaseUrl}/rest/v1/Colaborador?id=eq.${idToEdit}`, {
+        method: 'DELETE',
         headers: {
           apikey,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ newCollaborator })
+        }
       });
 
-      const data = (await res).json();
-
-      console.log(data)
+      if (res.ok) {
+        console.log("deletou legal")
+        showNotification('Operação Realizada com sucesso.', 'O colaborador foi removido com sucesso.', 'success')
+      }
 
     } catch (error) {
       console.error(error)
     }
   }
 
+
+  async function EditUser() {
+    if (name == '' || cpf == '' || cep == '' || logradouro == '' || numero == '' || cidade == '' || estado == '' || cargo == 0) {
+      showNotification("Preencha todos os campos antes de prosseguir", "Erro ao cadastrar novo usuário", 'error', 3500)
+      return;
+    }
+
+    if (!isValidCep(cep)) {
+      showNotification("Informação Inválida!", "O CEP é invalido!", 'error', 3500)
+      return;
+    }
+
+    if (!isValidCPF(cpf)) {
+      showNotification("Informação Inválida!", "O CPF é invalido!", 'error', 3500)
+      return;
+    }
+
+    try {
+      const res = await fetch(`${supabaseUrl}/rest/v1/Colaborador?id=eq.${idToEdit}`, {
+        method: 'PATCH',
+        headers: {
+          apikey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          nome: name,
+          cpf,
+          cep,
+          logradouro,
+          numero,
+          cidade,
+          estado,
+          idCargo: cargo
+        })
+      });
+
+      if (res.ok) {
+        console.log("atualizou legal")
+        showNotification('Operação Realizada com sucesso.', 'Os dados do colaborador foram atualizados com sucesso', 'success')
+      }
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  async function RegisterNewCollaborator() {
+    if (name == '' || cpf == '' || cep == '' || logradouro == '' || numero == '' || cidade == '' || estado == '' || cargo == 0) {
+      showNotification("Preencha todos os campos antes de prosseguir", "Erro ao cadastrar novo usuário", 'error', 3500)
+      return;
+    }
+
+    if (!isValidCep(cep)) {
+      showNotification("Informação Inválida!", "O CEP é invalido!", 'error', 3500)
+      return;
+    }
+
+    if (!isValidCPF(cpf)) {
+      showNotification("Informação Inválida!", "O CPF é invalido!", 'error', 3500)
+      return;
+    }
+
+    try {
+      const res = await fetch(`${supabaseUrl}/rest/v1/Colaborador`, {
+        method: 'POST',
+        headers: {
+          apikey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          nome: name,
+          cpf,
+          cep,
+          logradouro,
+          numero,
+          cidade,
+          estado,
+          idCargo: cargo
+        })
+      });
+
+      if (res.ok) {
+        console.log("cadastrou legal")
+        showNotification('Operação Realizada com sucesso.', 'O Colaborador foi cadastrado com sucesso!', 'success')
+        clearModal()
+      }
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+
+
+  function showNotification(
+    describe: string,
+    header: string,
+    type: NotificationType,
+    time: number = 3000
+  ) {
+    setNotificationType(type);
+    setNotificationHeader(header);
+    setNotificationDescribe(describe);
+
+    setNotificationIsVisible(true);
+    setTimeout(() => setNotificationIsVisible(false), time);
+  }
+
+  function closeModalConfirm() {
+    setModalConfirmVisible(false)
+  }
+
+  function openModalConfirm() {
+    setModalConfirmVisible(true)
+  }
+
+  function getCollabName(collabId: number) {
+    if (collaboratorList) {
+      const collab = collaboratorList.find(collaborator => (collaborator.id == collabId))
+
+      if (collab) {
+        return collab.nome
+      }
+
+    }
+    return '';
+  }
+
   return (
     <Container>
+      <Modal isVisible={modalConfirmVisible} onClose={closeModalConfirm}>
+        <Typography variant="body-M-regular">Certeza que deseja remover o coloaborador {getCollabName(idToEdit)} ? </Typography>
+        <DivButtons>
+          <Button size="large" variant="secondary" onClick={closeModalConfirm}><Typography variant="body-XS" >Cancelar</Typography></Button>
+          <Button size="large" variant="main" onClick={deleteUser}><Typography variant="body-XS" >Remover</Typography></Button>
+        </DivButtons>
+      </Modal>
+      <NotificationDiv $isVisible={notificationIsVisible}>
+        <Notification type={notificationType} model='informer' describe={notificationDescribe} header={notificationHeader} />
+      </NotificationDiv>
       <Modal onClose={closeModal} isVisible={modalIsVisible}>
         <InputContainer>
           <Typography variant="H3">Adicionar Colaborador</Typography>
@@ -369,7 +593,7 @@ export default function Collaborator() {
           <Input height="small" value={logradouro} disabled={cepInputsDisable} onChange={e => setLogradouro(e.target.value)} textLabel={<Typography variant="body-XS">Logradouro</Typography>}></Input>
           <Input height="small" value={cidade} disabled={cepInputsDisable} onChange={e => setCidade(e.target.value)} textLabel={<Typography variant="body-XS">Cidade</Typography>}></Input>
           <Input height="small" value={estado} disabled={cepInputsDisable} onChange={e => setEstado(e.target.value)} textLabel={<Typography variant="body-XS">Estado</Typography>}></Input>
-          <Select onChange={e => setCargo(Number(e.target.value))}>
+          <Select value={cargo} onChange={e => setCargo(Number(e.target.value))}>
             <option value="0"><Typography variant="body-XS">Selecione Um Cargo</Typography></option>
             {cargos && showPositionOptions(cargos)}
           </Select>
@@ -377,13 +601,15 @@ export default function Collaborator() {
           <Input height="small" value={salario} disabled={postionInputsDisable} onChange={e => setSalario(Number(e.target.value))} textLabel={<Typography variant="body-XS">Salário</Typography>}></Input>
           <DivButtons>
             <Button size="large" variant="secondary" onClick={closeModal}><Typography variant="body-XS" >Cancelar</Typography></Button>
-            <Button size="large" variant="main"><Typography variant="body-XS" >Adicionar</Typography></Button>
+            {ModalFunction == "add" ? <Button size="large" variant="main" onClick={RegisterNewCollaborator}><Typography variant="body-XS" >Adicionar</Typography></Button> :
+              <Button size="large" variant="main" onClick={EditUser}><Typography variant="body-XS" >Editar</Typography></Button>
+            }
           </DivButtons>
         </InputContainer>
       </Modal>
       <AddBox>
         <Typography variant="body-L">Adicionar Colaborador</Typography>
-        <Button size="large" variant="main" icon={AddSvg} onClick={openModal} >
+        <Button size="large" variant="main" icon={AddSvg} onClick={openAddModal} >
           <Typography variant="body-M-regular">Adicionar</Typography>
         </Button>
       </AddBox>
@@ -406,7 +632,7 @@ export default function Collaborator() {
             </tr>
           </thead>
           <tbody>
-            
+
             {collaboratorList && showCollaboratorsRows(collaboratorList)}
           </tbody>
         </table>
