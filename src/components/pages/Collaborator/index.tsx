@@ -1,7 +1,5 @@
 import Typography from "../../Typography";
 import Button from "../../Button";
-import styled from "styled-components";
-import { theme } from "../../colors/colorts";
 import AddSvg from '../../assets/addButton.svg'
 import { useEffect, useState } from "react";
 import Modal from "../../Modal";
@@ -9,173 +7,8 @@ import Input from "../../Input";
 import { NotificationType } from "../../notfication/types";
 import Notification from "../../notfication";
 import Sidebar from "../../Sidebar";
-
-interface PositionType {
-  id: number;
-  nomeDoCargo: string;
-  nivel: string;
-  salario: number;
-}
-
-interface Collaborator {
-  id?: number;
-  nome: string;
-  cpf: string;
-  cep: string;
-  logradouro: string;
-  numero: string;
-  cidade: string;
-  estado: string;
-  idCargo: number;
-}
-
-const Container = styled.div`
-  width: 100vw;
-  height: 100dvh;
-  padding: 15px 100px;
-  display: flex;
-  flex-direction: row;
-  align-items: start;
-  gap: 20px;
-`
-
-const AddBox = styled.div`
-  width: 25%;
-  background-color: ${theme.grayscale.bgLightGrey};
-  display: flex;
-  flex-direction: column; 
-  padding: 20px;
-  gap: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  `
-
-const Table = styled.div`
-  padding: 20px;
-  background-color:${theme.grayscale.bgLightGrey};
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  width: 75%;
-  overflow-x: scroll;
-
-  &::-webkit-scrollbar {
-  width: 10px;
-}
-
-
-&::-webkit-scrollbar-track {
-  background: ${theme.grayscale.bgLightGrey};
-  border-radius: 10px; 
-}
-
-
-&::-webkit-scrollbar-thumb {
-  background-color: ${theme.corporate.purple}; 
-  border-radius: 10px;
-  border: 2px solid #f1f1f1; 
-}
-
-  h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
-    }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 10px;
-  text-align: left;
-
-  border-radius: 8px;
-}
-
-th {
-  background-color: ;
-  font-weight: bold;
-}
-
-
-tr{
-height: 20px;
-}
-
-button {
-margin:  auto 0;
-}
-
-`
-
-const InputContainer = styled.div`
-padding: 10px;
-min-width: 100%;
-height: 500px;
-text-align: start;
-display: flex;
-flex-direction: column;
-align-items: start;
-gap: 25px;
-overflow-y: scroll;
-
-  input{
-  width: 1000%;
-  }
-  div {  
-  width: 100%;
-  }
-
-
-&::-webkit-scrollbar {
-  width: 10px;
-}
-
-
-&::-webkit-scrollbar-track {
-  background: ${theme.grayscale.bgLightGrey};
-  border-radius: 10px; 
-}
-
-
-&::-webkit-scrollbar-thumb {
-  background-color: ${theme.corporate.purple}; 
-  border-radius: 10px;
-  border: 2px solid #f1f1f1; 
-}
-
-`
-
-const DivButtons = styled.div`
-display: flex;
-gap: 20px;
-justify-content: center;
-`
-
-const Select = styled.select`
-appearance: none; /* Remove a aparência padrão */
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid ${theme.grayscale.spacerLight};
-  background-color: ${theme.grayscale.white};
-  color: #333;
-  cursor: pointer;
-  width: 100%;
-
- &:focus {
-  outline: none;
-  border-color: ${theme.corporate.purple};
-}
-`
-
-const NotificationDiv = styled.div<{ $isVisible: boolean }>`
-  position: absolute;
-  top: ${props => props.$isVisible ? '10%' : '-100%'};
-  left: 50%;
-  transform: translate(-50%,-50%);
-  transition: all 0.4s;
-  z-index: 9999;
-`
+import {AddBox,Container,DivButtons,InputContainer,NotificationDiv,Select,Table} from './style'
+import {CollaboratorType,PositionType} from './types'
 
 export default function Collaborator() {
 
@@ -199,7 +32,7 @@ export default function Collaborator() {
   const [cepInputsDisable, setCepInputsDisable] = useState(false)
   const [numero, setNumero] = useState("");
   const [cargos, setCargos] = useState<PositionType[]>();
-  const [collaboratorList, setCollaboratorsList] = useState<Collaborator[]>();
+  const [collaboratorList, setCollaboratorsList] = useState<CollaboratorType[]>();
   const [ModalFunction, setModalFunction] = useState<'edit' | 'add'>('add')
   const [modalConfirmVisible, setModalConfirmVisible] = useState(false)
   const [idToEdit, setIdToEdit] = useState(0)
@@ -298,7 +131,7 @@ export default function Collaborator() {
     }
   }
 
-  async function getCollaborators(): Promise<Collaborator[] | null> {
+  async function getCollaborators(): Promise<CollaboratorType[] | null> {
     try {
 
       const res = await fetch(`${supabaseUrl}/rest/v1/Colaborador`, {
@@ -312,7 +145,7 @@ export default function Collaborator() {
         throw new Error
       }
 
-      const data: Collaborator[] = await res.json();
+      const data: CollaboratorType[] = await res.json();
       setCollaboratorsList(data);
       console.log(data)
       return data;
@@ -328,7 +161,7 @@ export default function Collaborator() {
     ))
   }
 
-  function showCollaboratorsRows(collaborators: Collaborator[]) {
+  function showCollaboratorsRows(collaborators: CollaboratorType[]) {
 
     return collaborators.map(collaborator => {
       let colabCareer = cargos;
@@ -338,7 +171,6 @@ export default function Collaborator() {
       }
 
       return (
-
         <tr key={collaborator.id} data-id={collaborator.id}>
           <td><Typography variant="body-XS">{collaborator.nome}</Typography></td>
           <td><Typography variant="body-XS">{collaborator.cpf}</Typography></td>
@@ -347,10 +179,10 @@ export default function Collaborator() {
           <td><Typography variant="body-XS">{collaborator.numero}</Typography></td>
           <td><Typography variant="body-XS">{collaborator.cidade}</Typography></td>
           <td><Typography variant="body-XS">{collaborator.estado}</Typography></td>
-          <td><Typography variant="body-XS">{colabCareer && colabCareer[0].nomeDoCargo}</Typography></td>
-          <td><Typography variant="body-XS">{colabCareer && colabCareer[0].nivel}</Typography></td>
+          <td><Typography variant="body-XS">{colabCareer && colabCareer[0]?.nomeDoCargo || ''}</Typography></td>
+          <td><Typography variant="body-XS">{colabCareer && colabCareer[0]?.nivel || ''}</Typography></td>
           <td><Typography variant="body-XS">
-            {colabCareer && colabCareer[0].salario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })}</Typography></td>
+            {colabCareer && colabCareer[0]?.salario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || ''}</Typography></td>
           <td><Button size="small" variant="text" onClick={e => {
             const target = e.target as HTMLElement;
             const row = target.parentElement?.parentElement?.parentElement;
@@ -595,7 +427,7 @@ export default function Collaborator() {
       <Sidebar></Sidebar>
       <Container>
         <Modal isVisible={modalConfirmVisible} onClose={closeModalConfirm}>
-          <Typography variant="body-M-regular">Certeza que deseja remover o coloaborador {getCollabName(idToEdit)} ? </Typography>
+          <Typography variant="body-M-regular">{`Certeza que deseja remover o coloaborador ${getCollabName(idToEdit) || ''} ? `}</Typography>
           <DivButtons>
             <Button size="large" variant="secondary" onClick={closeModalConfirm}><Typography variant="body-XS" >Cancelar</Typography></Button>
             <Button size="large" variant="main" onClick={deleteUser}><Typography variant="body-XS" >Remover</Typography></Button>
