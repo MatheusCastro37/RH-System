@@ -6,6 +6,7 @@ import { supabase } from "../../supabase";
 import Notification from "../../notfication";
 import { NotificationType } from "../../notfication/types";
 import * as Styles from './styles'
+import { Link, useNavigate } from "react-router-dom";
 
 
 export default function Login() {
@@ -16,6 +17,8 @@ export default function Login() {
   const [notificationType, setNotificationType] =
     useState<NotificationType>("inform");
   const [notificationIsVisible, setNotificationIsVisible] = useState(false);
+
+  const navigate = useNavigate();
 
   async function login() {
     if (email == "" || password == "") {
@@ -51,6 +54,9 @@ export default function Login() {
           "success",
           2000
         );
+        setTimeout(() => {
+          navigate("/collaborator")
+        }, 2000);
       }
     } catch (error) {
       console.error(error);
@@ -104,6 +110,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Styles.InputBox>
+          <Typography variant="body-XS">Ainda não tem cadastro? <Link to="/signUp">Cadastre-se aqui</Link></Typography>
           <Button size="large" variant="main" onClick={login}>
             <Typography variant="body-M-regular">Entrar</Typography>
           </Button>
