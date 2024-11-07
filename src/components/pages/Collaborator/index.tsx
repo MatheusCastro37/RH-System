@@ -8,6 +8,7 @@ import Modal from "../../Modal";
 import Input from "../../Input";
 import { NotificationType } from "../../notfication/types";
 import Notification from "../../notfication";
+import Sidebar from "../../Sidebar";
 
 interface PositionType {
   id: number;
@@ -572,71 +573,74 @@ export default function Collaborator() {
   }
 
   return (
-    <Container>
-      <Modal isVisible={modalConfirmVisible} onClose={closeModalConfirm}>
-        <Typography variant="body-M-regular">Certeza que deseja remover o coloaborador {getCollabName(idToEdit)} ? </Typography>
-        <DivButtons>
-          <Button size="large" variant="secondary" onClick={closeModalConfirm}><Typography variant="body-XS" >Cancelar</Typography></Button>
-          <Button size="large" variant="main" onClick={deleteUser}><Typography variant="body-XS" >Remover</Typography></Button>
-        </DivButtons>
-      </Modal>
-      <NotificationDiv $isVisible={notificationIsVisible}>
-        <Notification type={notificationType} model='informer' describe={notificationDescribe} header={notificationHeader} />
-      </NotificationDiv>
-      <Modal onClose={closeModal} isVisible={modalIsVisible}>
-        <InputContainer>
-          <Typography variant="H3">Adicionar Colaborador</Typography>
-          <Input height="small" value={name} onChange={e => setName(e.target.value)} textLabel={<Typography variant="body-XS">Nome</Typography>}></Input>
-          <Input height="small" value={cpf} onChange={e => setCpf(e.target.value)} textLabel={<Typography variant="body-XS">CPF</Typography>}></Input>
-          <Input height="small" value={cep} onChange={e => setCep(e.target.value)} textLabel={<Typography variant="body-XS">CEP</Typography>}></Input>
-          <Input height="small" value={numero} onChange={e => setNumero(e.target.value)} textLabel={<Typography variant="body-XS">Número</Typography>}></Input>
-          <Input height="small" value={logradouro} disabled={cepInputsDisable} onChange={e => setLogradouro(e.target.value)} textLabel={<Typography variant="body-XS">Logradouro</Typography>}></Input>
-          <Input height="small" value={cidade} disabled={cepInputsDisable} onChange={e => setCidade(e.target.value)} textLabel={<Typography variant="body-XS">Cidade</Typography>}></Input>
-          <Input height="small" value={estado} disabled={cepInputsDisable} onChange={e => setEstado(e.target.value)} textLabel={<Typography variant="body-XS">Estado</Typography>}></Input>
-          <Select value={cargo} onChange={e => setCargo(Number(e.target.value))}>
-            <option value="0"><Typography variant="body-XS">Selecione Um Cargo</Typography></option>
-            {cargos && showPositionOptions(cargos)}
-          </Select>
-          <Input height="small" value={nivel} disabled={postionInputsDisable} onChange={e => setNivel(e.target.value)} textLabel={<Typography variant="body-XS">Nivel</Typography>}></Input>
-          <Input height="small" value={salario} disabled={postionInputsDisable} onChange={e => setSalario(Number(e.target.value))} textLabel={<Typography variant="body-XS">Salário</Typography>}></Input>
+    <>
+      <Sidebar></Sidebar>
+      <Container>
+        <Modal isVisible={modalConfirmVisible} onClose={closeModalConfirm}>
+          <Typography variant="body-M-regular">Certeza que deseja remover o coloaborador {getCollabName(idToEdit)} ? </Typography>
           <DivButtons>
-            <Button size="large" variant="secondary" onClick={closeModal}><Typography variant="body-XS" >Cancelar</Typography></Button>
-            {ModalFunction == "add" ? <Button size="large" variant="main" onClick={RegisterNewCollaborator}><Typography variant="body-XS" >Adicionar</Typography></Button> :
-              <Button size="large" variant="main" onClick={EditUser}><Typography variant="body-XS" >Editar</Typography></Button>
-            }
+            <Button size="large" variant="secondary" onClick={closeModalConfirm}><Typography variant="body-XS" >Cancelar</Typography></Button>
+            <Button size="large" variant="main" onClick={deleteUser}><Typography variant="body-XS" >Remover</Typography></Button>
           </DivButtons>
-        </InputContainer>
-      </Modal>
-      <AddBox>
-        <Typography variant="body-L">Adicionar Colaborador</Typography>
-        <Button size="large" variant="main" icon={AddSvg} onClick={openAddModal} >
-          <Typography variant="body-M-regular">Adicionar</Typography>
-        </Button>
-      </AddBox>
+        </Modal>
+        <NotificationDiv $isVisible={notificationIsVisible}>
+          <Notification type={notificationType} model='informer' describe={notificationDescribe} header={notificationHeader} />
+        </NotificationDiv>
+        <Modal onClose={closeModal} isVisible={modalIsVisible}>
+          <InputContainer>
+            <Typography variant="H3">Adicionar Colaborador</Typography>
+            <Input height="small" value={name} onChange={e => setName(e.target.value)} textLabel={<Typography variant="body-XS">Nome</Typography>}></Input>
+            <Input height="small" value={cpf} onChange={e => setCpf(e.target.value)} textLabel={<Typography variant="body-XS">CPF</Typography>}></Input>
+            <Input height="small" value={cep} onChange={e => setCep(e.target.value)} textLabel={<Typography variant="body-XS">CEP</Typography>}></Input>
+            <Input height="small" value={numero} onChange={e => setNumero(e.target.value)} textLabel={<Typography variant="body-XS">Número</Typography>}></Input>
+            <Input height="small" value={logradouro} disabled={cepInputsDisable} onChange={e => setLogradouro(e.target.value)} textLabel={<Typography variant="body-XS">Logradouro</Typography>}></Input>
+            <Input height="small" value={cidade} disabled={cepInputsDisable} onChange={e => setCidade(e.target.value)} textLabel={<Typography variant="body-XS">Cidade</Typography>}></Input>
+            <Input height="small" value={estado} disabled={cepInputsDisable} onChange={e => setEstado(e.target.value)} textLabel={<Typography variant="body-XS">Estado</Typography>}></Input>
+            <Select value={cargo} onChange={e => setCargo(Number(e.target.value))}>
+              <option value="0"><Typography variant="body-XS">Selecione Um Cargo</Typography></option>
+              {cargos && showPositionOptions(cargos)}
+            </Select>
+            <Input height="small" value={nivel} disabled={postionInputsDisable} onChange={e => setNivel(e.target.value)} textLabel={<Typography variant="body-XS">Nivel</Typography>}></Input>
+            <Input height="small" value={salario} disabled={postionInputsDisable} onChange={e => setSalario(Number(e.target.value))} textLabel={<Typography variant="body-XS">Salário</Typography>}></Input>
+            <DivButtons>
+              <Button size="large" variant="secondary" onClick={closeModal}><Typography variant="body-XS" >Cancelar</Typography></Button>
+              {ModalFunction == "add" ? <Button size="large" variant="main" onClick={RegisterNewCollaborator}><Typography variant="body-XS" >Adicionar</Typography></Button> :
+                <Button size="large" variant="main" onClick={EditUser}><Typography variant="body-XS" >Editar</Typography></Button>
+              }
+            </DivButtons>
+          </InputContainer>
+        </Modal>
+        <AddBox>
+          <Typography variant="body-L">Adicionar Colaborador</Typography>
+          <Button size="large" variant="main" icon={AddSvg} onClick={openAddModal} >
+            <Typography variant="body-M-regular">Adicionar</Typography>
+          </Button>
+        </AddBox>
 
-      <Table>
-        <Typography variant="H2">Colaboradores</Typography>
-        <table>
-          <thead>
-            <tr>
-              <th><Typography variant="body-S">Nome</Typography></th>
-              <th><Typography variant="body-S">CPF</Typography></th>
-              <th><Typography variant="body-S">CEP</Typography></th>
-              <th><Typography variant="body-S">Logradouro</Typography></th>
-              <th><Typography variant="body-S">Número</Typography></th>
-              <th><Typography variant="body-S">Cidade</Typography></th>
-              <th><Typography variant="body-S">Estado</Typography></th>
-              <th><Typography variant="body-S">Cargo</Typography></th>
-              <th><Typography variant="body-S">Nível</Typography></th>
-              <th><Typography variant="body-S">Salário</Typography></th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <Typography variant="H2">Colaboradores</Typography>
+          <table>
+            <thead>
+              <tr>
+                <th><Typography variant="body-S">Nome</Typography></th>
+                <th><Typography variant="body-S">CPF</Typography></th>
+                <th><Typography variant="body-S">CEP</Typography></th>
+                <th><Typography variant="body-S">Logradouro</Typography></th>
+                <th><Typography variant="body-S">Número</Typography></th>
+                <th><Typography variant="body-S">Cidade</Typography></th>
+                <th><Typography variant="body-S">Estado</Typography></th>
+                <th><Typography variant="body-S">Cargo</Typography></th>
+                <th><Typography variant="body-S">Nível</Typography></th>
+                <th><Typography variant="body-S">Salário</Typography></th>
+              </tr>
+            </thead>
+            <tbody>
 
-            {collaboratorList && showCollaboratorsRows(collaboratorList)}
-          </tbody>
-        </table>
-      </Table>
-    </Container>
+              {collaboratorList && showCollaboratorsRows(collaboratorList)}
+            </tbody>
+          </table>
+        </Table>
+      </Container>
+    </>
   );
 }
