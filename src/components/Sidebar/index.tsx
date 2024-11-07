@@ -11,8 +11,6 @@ import Button from "../Button"
 import { useNavigate } from "react-router-dom"
 
 
-
-
 const MenuImg = styled.img`
 width: 50px;
 height: 50px;

@@ -31,7 +31,7 @@ interface Collaborator {
 
 const Container = styled.div`
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   padding: 15px 100px;
   display: flex;
   flex-direction: row;
@@ -40,7 +40,7 @@ const Container = styled.div`
 `
 
 const AddBox = styled.div`
-  width: 350px;
+  width: 25%;
   background-color: ${theme.grayscale.bgLightGrey};
   display: flex;
   flex-direction: column; 
@@ -55,8 +55,26 @@ const Table = styled.div`
   background-color:${theme.grayscale.bgLightGrey};
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  width: 100%;
-  
+  width: 75%;
+  overflow-x: scroll;
+
+  &::-webkit-scrollbar {
+  width: 10px;
+}
+
+
+&::-webkit-scrollbar-track {
+  background: ${theme.grayscale.bgLightGrey};
+  border-radius: 10px; 
+}
+
+
+&::-webkit-scrollbar-thumb {
+  background-color: ${theme.corporate.purple}; 
+  border-radius: 10px;
+  border: 2px solid #f1f1f1; 
+}
+
   h2 {
     font-size: 24px;
     margin-bottom: 10px;
