@@ -23,7 +23,8 @@ const renderActiveShape = ({payload, ...props}: propsGraph) => {
   return (
     <g>
       <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} lengthAdjust="spacing">
-        {showValue ? `${payload.qtd}: ${payload.name}` : payload.name}
+        {showValue ? <tspan x={cx} y={showValue ? cy-10 : 0} dy={8}>Quantidade: {payload.qtd}</tspan> : null}
+        {<tspan x={cx} y={showValue ? cy+15 : cy} dy={8}>{payload.name}</tspan>}
       </text>
       <Sector
         cx={cx}
