@@ -9,9 +9,15 @@ import Notification from "../../notfication";
 import Sidebar from "../../Sidebar";
 import {AddBox,Container,DivButtons,InputContainer,NotificationDiv,Select,Table} from './style'
 import {CollaboratorType,PositionType} from './types'
+import { verifyIfIsLogged } from "../../../config/auth";
 
 export default function Collaborator() {
-
+  useEffect(() => {
+    if(verifyIfIsLogged ()){
+    return
+    }
+    window.location.href = '../'
+  }, [] )
 
   const [notificationDescribe, setNotificationDescribe] = useState("");
   const [notificationHeader, setNotificationHeader] = useState("");

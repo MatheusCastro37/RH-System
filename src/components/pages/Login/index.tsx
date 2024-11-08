@@ -1,15 +1,24 @@
 import Typography from "../../Typography";
 import Input from "../../Input";
 import Button from "../../Button";
-import { useState } from "react";
-import { supabase } from "../../supabase";
+import { useEffect, useState } from "react";
+import { supabase } from "../../../config/supabase";
 import Notification from "../../notfication";
 import { NotificationType } from "../../notfication/types";
 import * as Styles from './styles'
 import { Link, useNavigate } from "react-router-dom";
+import { verifyIfIsLogged } from "../../../config/auth";
 
 
 export default function Login() {
+
+  useEffect(() => {
+    if(verifyIfIsLogged ()){
+      window.location.href = './dashboard'
+    }
+    return
+  }, [] )
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [notificationDescribe, setNotificationDescribe] = useState("");
@@ -55,7 +64,7 @@ export default function Login() {
           2000
         );
         setTimeout(() => {
-          navigate("/collaborator")
+          navigate("/dashboard")
         }, 2000);
       }
     } catch (error) {
@@ -110,7 +119,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Styles.InputBox>
-          <Typography variant="body-XS">Ainda não tem cadastro? <Link to="/signUp">Cadastre-se aqui</Link></Typography>
+          <Typography variant="body-XS">Ainda não tem cadastro? <Link to="/signUp">pCadastre-se aqui</Link></Typography>
           <Button size="large" variant="main" onClick={login}>
             <Typography variant="body-M-regular">Entrar</Typography>
           </Button>
