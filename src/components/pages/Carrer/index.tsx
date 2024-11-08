@@ -8,6 +8,7 @@ import Input from "../../Input";
 import loading from "../../assets/spinner.svg";
 import Notification from "../../notfication";
 import { NotificationType } from "../../notfication/types";
+import { verifyIfIsLogged } from "../../../config/auth";
 
 function convertNumberToReal(value: number) {
     const valueFormatted = new Intl.NumberFormat('pt-BR', {
@@ -32,6 +33,14 @@ function validateSalary(salary: string) {
 }
 
 export default function Carrer() {
+
+    useEffect(() => {
+        if(verifyIfIsLogged ()){
+        return
+        }
+        window.location.href = '../'
+      }, [] )
+
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [typeModal, setTypeModal] = useState<typeModal>("create");
 

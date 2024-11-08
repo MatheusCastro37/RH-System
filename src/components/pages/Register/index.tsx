@@ -4,7 +4,7 @@ import Input from "../../Input";
 import Typography from "../../Typography";
 import { Container, ContainerButton, WrapperForm } from "./style";
 import spinner from "../../assets/spinner.svg";
-import { supabase } from "../../supabase";
+import { supabase } from "../../../config/supabase";
 import Notification from "../../notfication";
 import { NotificationType } from "../../notfication/types";
 import { notification } from "./type";
