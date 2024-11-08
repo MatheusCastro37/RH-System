@@ -1,6 +1,7 @@
 export type selectType = "region" | "salary";
 
 export interface payload<T>{
+    qtd: number,
     name: string,
     value: T
 }

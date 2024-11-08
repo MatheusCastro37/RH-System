@@ -22,8 +22,8 @@ const renderActiveShape = ({payload, ...props}: propsGraph) => {
 
   return (
     <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
-        {payload.name}
+      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} lengthAdjust="spacing">
+        {showValue ? `${payload.qtd}: ${payload.name}` : payload.name}
       </text>
       <Sector
         cx={cx}
@@ -45,7 +45,7 @@ const renderActiveShape = ({payload, ...props}: propsGraph) => {
       />
       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
       <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#333">{`${textTooltip}: ${value}`}</text>
+      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#333">{`${textTooltip} ${value}`}</text>
       <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#999">
         {`(Porcentagem ${(percent * 100).toFixed(2)}%)`}
       </text>
@@ -53,10 +53,12 @@ const renderActiveShape = ({payload, ...props}: propsGraph) => {
   );
 };
 
+let showValue = false;
 export default function Dashboard() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const [valueSelect, setValueSelect] = useState<selectType>("region");
+  const [titleGraph, setTitleGraph] = useState("funcionarios por estado")
 
   const [listDataGraph, setListDataGraph] = useState<payload<string | number>[]>([]);
 
@@ -73,10 +75,14 @@ export default function Dashboard() {
   useEffect(() => {
     if(valueSelect === "region") {
       getCollabs();
+      showValue = false
       textTooltip = "Funcionarios";
+      setTitleGraph("funcionarios por estado")
     } else {
       getSalaries();
-      textTooltip = "Salario";
+      showValue = true;
+      textTooltip = "Salario: R$";
+      setTitleGraph("funcionarios por cargo e salario")
     }
   }, [valueSelect]);
 
@@ -95,7 +101,6 @@ export default function Dashboard() {
 
       const data: collaborator[] = await res.json();
       const dataMapping = mappingCollabs(data);
-      console.log(dataMapping)
       setListDataGraph(dataMapping);
       return data;
     } catch (error) {
@@ -105,6 +110,7 @@ export default function Dashboard() {
   };
 
   async function getSalaries() {
+    const collabs = await getCollabs();
     try {
       const res = await fetch(`${supabaseUrl}/rest/v1/Cargo`, {
         headers: {
@@ -118,9 +124,10 @@ export default function Dashboard() {
       }
 
       const data: carrers[] = await res.json();
-      const dataMapping = mappingSalaries(data);
-      console.log(dataMapping)
-      setListDataGraph(dataMapping);
+      console.log(data);
+      console.log(collabs);
+      const salariesMapping = mappingSalaries(data, collabs);
+      setListDataGraph(salariesMapping);
       return data;
     } catch (error) {
       console.error("Erro ao buscar Cargos na API: " + error)
@@ -139,9 +146,10 @@ export default function Dashboard() {
         contagem[item.estado] = 1; // Adiciona a primeira ocorrência
       }
     });
-
+    
     // Cria a nova lista com os estados e suas quantidades
     const result = Object.keys(contagem).map(name => ({
+      qtd: contagem[name],
       name,
       value: contagem[name]
     }));
@@ -149,28 +157,47 @@ export default function Dashboard() {
     return result;
   }
 
-  function mappingSalaries(data: carrers[]) {
-    const resultado: { [key: string]: { somaSalarios: number, quantidade: number } } = {};
+  function mappingSalaries(listCarrers: carrers[], listCollabs: collaborator[]) {
+    const idsLista2 = new Set(listCarrers.map(item => item.id));
 
-    // Agrupar cargos e somar os salários
-    data.forEach(cargo => {
-      if (!resultado[cargo.nomeDoCargo]) {
-        resultado[cargo.nomeDoCargo] = { somaSalarios: 0, quantidade: 0 };
+    // Contar as ocorrências dos ids de lista1 que estão em lista2
+    const countCollabsCarrers = listCollabs.reduce((acc: { id: number, count: number }[], item) => {
+      if (idsLista2.has(item.idCargo)) {
+        // Verifica se o id já foi adicionado ao resultado
+        const existing = acc.find(r => r.id === item.idCargo);
+        if (existing) {
+          // Se já existe, incrementa a contagem
+          existing.count += 1;
+        } else {
+          // Se não existe, adiciona o novo id com contagem 1
+          acc.push({ id: item.idCargo, count: 1 });
+        }
       }
-      resultado[cargo.nomeDoCargo].somaSalarios += cargo.salario;
-      resultado[cargo.nomeDoCargo].quantidade += 1;
-    });
+      return acc;
+    }, []);
 
-    // Criar o array de resultados com nome do cargo e média dos salários
-    const mediasSalarios = Object.keys(resultado).map(cargo => {
-      const { somaSalarios, quantidade } = resultado[cargo];
+    const mapaNomes = new Map<number, string>(
+      listCarrers.map(item => [item.id, item.nomeDoCargo])
+    );
+
+    const salariesMap = new Map<number, number>(
+      listCarrers.map(item => [item.id, item.salario])
+    );
+
+    // Iterar sobre listaComContagem e adicionar o nome de lista2
+    const resultado = countCollabsCarrers.map(item => {
+      const nome = mapaNomes.get(item.id); // Busca o nome usando o id
+      const salario = salariesMap.get(item.id);
+
       return {
-        name: cargo,
-        value: somaSalarios / quantidade
+        qtd: item.count,
+        name: nome!,
+        value: salario,
       };
     });
+    
+    return resultado;
 
-    return mediasSalarios;
   }
 
   return(
@@ -192,21 +219,21 @@ export default function Dashboard() {
                   </Select>
                 </label>
               </div>
-              <PieChart width={700} height={250}>
+              <PieChart width={700} height={400}>
               <Pie
                   activeIndex={activeIndex}
                   activeShape={renderActiveShape}
                   data={listDataGraph}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
+                  innerRadius={100}
+                  outerRadius={120}
                   fill={theme.corporate.purple}
                   dataKey="value"
                   onMouseEnter={onPieEnter}
               />
               </PieChart>
-              <Typography variant="H4">Comparativo de funcionarios por estado</Typography>
+              <Typography variant="H4">Comparativo de {titleGraph}</Typography>
             </div>
           </CardContainer>
       </BodyContainer>
