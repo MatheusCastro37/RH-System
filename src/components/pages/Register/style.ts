@@ -58,7 +58,7 @@ export const ContainerButton = styled.div`
         display: none;
     }
 
-    button > div.show{
+    button.show > div{
         display: block;
     }
 `;
